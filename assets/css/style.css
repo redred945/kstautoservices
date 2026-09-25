@@ -490,11 +490,8 @@ h1, h2, h3, h4, p, figure, dl, dd { margin: 0; }
   width: 100%; height: 100%;
   object-fit: cover;
   object-position: 50% 50%;
-  opacity: 0;
   filter: saturate(1) contrast(1.05) brightness(.95);
-  transition: opacity 1.6s var(--ease);
 }
-.hero__video.is-live { opacity: 1; }
 .hero__film {
   display: none;
   align-items: center; gap: .7rem;
@@ -539,10 +536,10 @@ h1, h2, h3, h4, p, figure, dl, dd { margin: 0; }
 /* Pendant le splash, l'entrée du hero est décalée pour ne pas jouer cachée dessous ;
    elle reprend son cours dès que .is-splash disparaît (voir app.js), ou au pire au bout
    d'un délai fixe même si le JS échoue (fill-mode both = état final conservé). */
-html.is-splash .hero__eyebrow { animation-delay: 1.6s; }
-html.is-splash .hero__title .line:nth-child(1) > span { animation-delay: 1.7s; }
-html.is-splash .hero__title .line:nth-child(2) > span { animation-delay: 1.84s; }
-html.is-splash .hero__title .line:nth-child(3) > span { animation-delay: 1.98s; }
+html.is-splash .hero__eyebrow { animation-delay: 2.6s; }
+html.is-splash .hero__title .line:nth-child(1) > span { animation-delay: 2.7s; }
+html.is-splash .hero__title .line:nth-child(2) > span { animation-delay: 2.84s; }
+html.is-splash .hero__title .line:nth-child(3) > span { animation-delay: 2.98s; }
 .hero__title em {
   font-style: italic;
   color: var(--gold-light);
@@ -561,7 +558,7 @@ html.is-splash .hero__title .line:nth-child(3) > span { animation-delay: 1.98s; 
     filter: drop-shadow(0 0 22px rgba(232, 210, 154, .38)) drop-shadow(0 2px 1px rgba(0, 0, 0, .35));
     animation: luxeShine 5.5s var(--ease) 1.4s infinite;
   }
-  html.is-splash .hero__title em { animation-delay: 3.2s; }
+  html.is-splash .hero__title em { animation-delay: 4.2s; }
 }
 @keyframes luxeShine {
   0%   { background-position: 150% 0, 0 0; }
@@ -2026,7 +2023,9 @@ html.is-splash .hero__title .line:nth-child(3) > span { animation-delay: 1.98s; 
 }
 
 /* ==========================================================================
-   15. Splash d'ouverture — une fois par session, ≤ 2,2 s, s'efface seul en CSS
+   15. Splash d'ouverture — une fois par session, ~3,2 s, s'efface seul en CSS
+   Déroulé : logo aux étoiles éteintes → les 5 étoiles s'allument une à une →
+   filet + légende → les deux rideaux s'ouvrent sur le site.
    ========================================================================== */
 .splash { display: none; }
 html.is-splash .splash {
@@ -2035,18 +2034,33 @@ html.is-splash .splash {
   inset: 0;
   z-index: 400;
   cursor: pointer;
-  background: var(--ink);
-  animation: splash-gone 0s linear 2.2s forwards;
+  animation: splash-gone 0s linear 3.2s forwards;
 }
 .splash-panel {
   position: absolute;
   left: 0; right: 0;
   height: calc(50% + 1px);
-  background: var(--ink);
+  background: radial-gradient(120% 90% at 50% 100%, #16140f, var(--ink) 60%);
   will-change: transform;
 }
-.splash-panel--top { top: 0; animation: splash-open-up .55s var(--ease) 1.5s forwards; }
-.splash-panel--bottom { bottom: 0; animation: splash-open-down .55s var(--ease) 1.5s forwards; }
+.splash-panel--top { top: 0; animation: splash-open-up .75s cubic-bezier(.76, 0, .24, 1) 2.45s forwards; }
+.splash-panel--bottom {
+  bottom: 0;
+  background: radial-gradient(120% 90% at 50% 0%, #16140f, var(--ink) 60%);
+  animation: splash-open-down .75s cubic-bezier(.76, 0, .24, 1) 2.45s forwards;
+}
+/* filet d'or sur la jointure des rideaux */
+.splash-panel::after {
+  content: "";
+  position: absolute; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold) 30%, var(--gold-light) 50%, var(--gold) 70%, transparent);
+  opacity: 0;
+  transform: scaleX(0);
+  animation: splash-seam .5s var(--ease-out) 2.1s forwards;
+}
+.splash-panel--top::after { bottom: 0; }
+.splash-panel--bottom::after { top: 0; }
 
 .splash-stage {
   position: absolute; inset: 0;
@@ -2055,18 +2069,39 @@ html.is-splash .splash {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1.1rem;
-  animation: splash-fade-out .3s ease 1.4s forwards;
+  gap: 1.3rem;
+  pointer-events: none;
+  animation: splash-fade-out .35s ease 2.3s forwards;
 }
 .splash-logo {
-  width: min(120px, 26vw);
+  position: relative;
+  width: min(340px, 68vw);
   opacity: 0;
-  transform: scale(.9);
-  animation: splash-logo-in .6s var(--ease-out) .1s forwards;
+  transform: scale(.92);
+  animation: splash-logo-in .8s var(--ease-out) .1s forwards;
 }
-.splash-logo img { width: 100%; height: auto; filter: drop-shadow(0 0 26px rgba(201, 164, 92, .35)); }
+.splash-logo img { display: block; width: 100%; height: auto; }
+.splash-logo::before {
+  content: "";
+  position: absolute; inset: -30% -25%;
+  background: radial-gradient(closest-side, rgba(232, 210, 154, .16), rgba(201, 164, 92, .05) 55%, transparent);
+  pointer-events: none;
+}
+.splash-logo > img:first-child { filter: drop-shadow(0 0 30px rgba(201, 164, 92, .22)); }
+.splash-star {
+  position: absolute;
+  height: auto;
+  opacity: 0;
+  transform: scale(1.8);
+  animation: splash-star-on .55s cubic-bezier(.2, 1.4, .4, 1) forwards;
+}
+.splash-star:nth-child(2) { animation-delay: .85s; }
+.splash-star:nth-child(3) { animation-delay: 1.07s; }
+.splash-star:nth-child(4) { animation-delay: 1.29s; }
+.splash-star:nth-child(5) { animation-delay: 1.51s; }
+.splash-star:nth-child(6) { animation-delay: 1.73s; }
 .splash-line {
-  width: min(160px, 40vw);
+  width: min(180px, 44vw);
   height: 1px;
   background: var(--line);
   overflow: hidden;
@@ -2076,8 +2111,7 @@ html.is-splash .splash {
   height: 100%;
   background: var(--gold-grad);
   transform: scaleX(0);
-  transform-origin: left;
-  animation: splash-line-draw .55s var(--ease-out) .45s forwards;
+  animation: splash-line-draw .8s var(--ease-out) .55s forwards;
 }
 .splash-caption {
   margin: 0;
@@ -2086,12 +2120,12 @@ html.is-splash .splash {
   text-transform: uppercase;
   color: var(--gold-light);
   opacity: 0;
-  animation: splash-caption-in .6s var(--ease-out) .6s forwards;
+  animation: splash-caption-in .8s var(--ease-out) .75s forwards;
 }
 
 /* Passer le splash au clic / toucher / touche (app.js) : fermeture plus rapide */
-.splash.is-skipping .splash-panel--top { animation: splash-skip-up .4s var(--ease) forwards; }
-.splash.is-skipping .splash-panel--bottom { animation: splash-skip-down .4s var(--ease) forwards; }
+.splash.is-skipping .splash-panel--top { animation: splash-skip-up .45s var(--ease) forwards; }
+.splash.is-skipping .splash-panel--bottom { animation: splash-skip-down .45s var(--ease) forwards; }
 .splash.is-skipping .splash-stage { animation: splash-fade-out .2s ease forwards; }
 
 @keyframes splash-gone { to { visibility: hidden; } }
@@ -2102,7 +2136,13 @@ html.is-splash .splash {
 @keyframes splash-fade-out { from { opacity: 1; } to { opacity: 0; } }
 @keyframes splash-logo-in { to { opacity: 1; transform: none; } }
 @keyframes splash-line-draw { to { transform: scaleX(1); } }
+@keyframes splash-seam { to { opacity: 1; transform: scaleX(1); } }
 @keyframes splash-caption-in { from { opacity: 0; letter-spacing: .8em; } to { opacity: 1; letter-spacing: .5em; } }
+@keyframes splash-star-on {
+  0%   { opacity: 0; transform: scale(1.8); filter: brightness(2.6) drop-shadow(0 0 14px #fff3c4); }
+  55%  { opacity: 1; transform: scale(.94); filter: brightness(1.7) drop-shadow(0 0 12px rgba(255, 236, 170, .95)); }
+  100% { opacity: 1; transform: none; filter: brightness(1.1) drop-shadow(0 0 7px rgba(232, 210, 154, .7)); }
+}
 
 /* ==========================================================================
    16. Rangées glissables (mobile) — scroll natif, scroll vertical intact

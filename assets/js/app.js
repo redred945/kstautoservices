@@ -40,7 +40,7 @@
   /* ==========================================================================
      Splash (posé par le script inline du <head>, une fois par session) :
      passe au clic / toucher / touche. S'il échoue, le CSS seul referme le
-     splash à 2,2 s et joue l'entrée du hero (fill-mode both) sans aide du JS.
+     splash à 3,2 s et joue l'entrée du hero (fill-mode both) sans aide du JS.
      ========================================================================== */
   (function splash() {
     const root = document.documentElement;
@@ -52,18 +52,22 @@
     function finish() {
       if (done) return;
       done = true;
-      root.classList.remove('is-splash');
+      if (splashEl.classList.contains('is-skipping')) root.classList.remove('is-splash');
       splashEl.remove();
       EVENTS.forEach(t => window.removeEventListener(t, skip));
     }
+    // En fin naturelle, .is-splash reste posée : l'entrée du hero, déjà calée sur l'ouverture
+    // des rideaux, continue sans à-coup. Si on passe le splash, on la retire pour avancer l'entrée.
     function skip() {
       if (done || splashEl.classList.contains('is-skipping')) return;
       splashEl.classList.add('is-skipping');
-      setTimeout(finish, 420);
+      setTimeout(finish, 460);
     }
     EVENTS.forEach(t => window.addEventListener(t, skip, { passive: true }));
-    if (door) door.addEventListener('animationend', finish, { once: true });
-    setTimeout(finish, 2400);
+    if (door) door.addEventListener('animationend', e => {
+      if (e.animationName === 'splash-open-down') finish();
+    });
+    setTimeout(finish, 3400);
   })();
 
   const storage = {
@@ -441,24 +445,20 @@
   (function heroVideo() {
     const v = $('[data-hero-video]');
     if (!v) return;
+    // La vidéo démarre dès l'ouverture (autoplay) ; sa première image sert d'affiche, sans transition visible.
     const conn = navigator.connection || {};
     const saving = conn.saveData || /(^|-)2g$|3g/.test(conn.effectiveType || '');
-    if (saving || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    let started = false;
-    const start = () => {
-      if (started) return;
-      started = true;
-      v.src = v.dataset.src;
-      v.addEventListener('playing', () => v.classList.add('is-live'), { once: true });
-      const p = v.play();
-      if (p && p.catch) p.catch(() => { /* lecture bloquée : la photo reste affichée */ });
-    };
-    const arm = () => ('requestIdleCallback' in window ? requestIdleCallback(start, { timeout: 2500 }) : setTimeout(start, 1200));
-    if (document.readyState === 'complete') arm(); else window.addEventListener('load', arm, { once: true });
+    if (saving || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      v.removeAttribute('autoplay');
+      v.preload = 'none';
+      v.pause();
+      return;
+    }
+    const play = () => { const p = v.play(); if (p && p.catch) p.catch(() => { /* lecture bloquée : l'affiche reste affichée */ }); };
+    play();
     // Économie de batterie : pause quand le hero n'est plus visible
     new IntersectionObserver(([en]) => {
-      if (!started || !v.src) return;
-      if (en.isIntersecting) { const p = v.play(); if (p && p.catch) p.catch(() => {}); } else v.pause();
+      if (en.isIntersecting) play(); else v.pause();
     }, { threshold: 0.05 }).observe($('.hero'));
   })();
 

@@ -25,7 +25,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&display=swap">
-  <link rel="preload" as="image" href="assets/img/mercedes/classe-s/classe-s-1.webp" fetchpriority="high">
+  <link rel="preload" as="image" href="assets/img/Home/hero-poster.webp" fetchpriority="high">
   <script>
     /* Splash d'ouverture : une fois par session, jamais si l'utilisateur préfère moins d'animation.
        Posé avant le CSS pour éviter tout flash ; se referme seul en CSS même si ce script échoue ailleurs. */
@@ -120,7 +120,14 @@
     <div class="splash-panel splash-panel--top"></div>
     <div class="splash-panel splash-panel--bottom"></div>
     <div class="splash-stage">
-      <div class="splash-logo"><img src="assets/img/logo/icon-kstautoservices.png" alt="" width="888" height="666"></div>
+      <div class="splash-logo">
+        <img src="assets/img/logo/logo-stars-off.webp" alt="" width="600" height="450">
+        <img class="splash-star" src="assets/img/logo/star-1.webp" alt="" style="left:23.198%;top:74.474%;width:7.770%">
+        <img class="splash-star" src="assets/img/logo/star-2.webp" alt="" style="left:33.333%;top:83.333%;width:7.995%">
+        <img class="splash-star" src="assets/img/logo/star-3.webp" alt="" style="left:45.833%;top:87.538%;width:7.770%">
+        <img class="splash-star" src="assets/img/logo/star-4.webp" alt="" style="left:58.108%;top:83.183%;width:7.995%">
+        <img class="splash-star" src="assets/img/logo/star-5.webp" alt="" style="left:68.468%;top:74.474%;width:7.658%">
+      </div>
       <div class="splash-line"><span></span></div>
       <p class="splash-caption">KST Auto Loc'</p>
     </div>
@@ -212,10 +219,10 @@
     <!-- ============ 1. Hero ============ -->
     <section class="hero" id="accueil" aria-labelledby="hero-title">
       <div class="hero__media" data-parallax="0.16">
-        <img src="assets/img/mercedes/classe-s/classe-s-1.webp"
-             alt="Mercedes Classe S Maybach bicolore blanc et noir, un bouquet de fleurs blanches sur le capot, vue avant trois-quarts"
-             width="1800" height="884" fetchpriority="high" decoding="async">
-        <video class="hero__video" muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-hero-video data-src="assets/img/Home/hero-loop.mp4"></video>
+        <img src="assets/img/Home/hero-poster.webp"
+             alt="Arrière d'une Porsche Cayenne blanche, première image de la vidéo de présentation KST Auto Loc'"
+             width="960" height="540" fetchpriority="high" decoding="async">
+        <video class="hero__video" src="assets/img/Home/hero-loop.mp4" poster="assets/img/Home/hero-poster.webp" autoplay muted loop playsinline preload="auto" tabindex="-1" aria-hidden="true" disablepictureinpicture data-hero-video></video>
       </div>
       <div class="hero__shade" aria-hidden="true"></div>
 
