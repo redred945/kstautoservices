@@ -2093,13 +2093,13 @@ html.is-splash .splash {
   height: auto;
   opacity: 0;
   transform: scale(1.8);
-  animation: splash-star-on .55s cubic-bezier(.2, 1.4, .4, 1) forwards;
+  animation: splash-star-on .4s cubic-bezier(.2, 1.4, .4, 1) forwards;
 }
-.splash-star:nth-child(2) { animation-delay: .85s; }
-.splash-star:nth-child(3) { animation-delay: 1.07s; }
-.splash-star:nth-child(4) { animation-delay: 1.29s; }
-.splash-star:nth-child(5) { animation-delay: 1.51s; }
-.splash-star:nth-child(6) { animation-delay: 1.73s; }
+.splash-star:nth-child(2) { animation-delay: .6s; }
+.splash-star:nth-child(3) { animation-delay: .7s; }
+.splash-star:nth-child(4) { animation-delay: .8s; }
+.splash-star:nth-child(5) { animation-delay: .9s; }
+.splash-star:nth-child(6) { animation-delay: 1s; }
 .splash-line {
   width: min(180px, 44vw);
   height: 1px;
