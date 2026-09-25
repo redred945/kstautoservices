@@ -400,6 +400,33 @@
   lb.stage.addEventListener('pointercancel', () => { swipeX = null; });
 
   /* ==========================================================================
+     Vidéo d'ambiance du hero (boucle sans son, chargée après le premier affichage)
+     ========================================================================== */
+  (function heroVideo() {
+    const v = $('[data-hero-video]');
+    if (!v) return;
+    const conn = navigator.connection || {};
+    const saving = conn.saveData || /(^|-)2g$|3g/.test(conn.effectiveType || '');
+    if (saving || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    let started = false;
+    const start = () => {
+      if (started) return;
+      started = true;
+      v.src = v.dataset.src;
+      v.addEventListener('playing', () => v.classList.add('is-live'), { once: true });
+      const p = v.play();
+      if (p && p.catch) p.catch(() => { /* lecture bloquée : la photo reste affichée */ });
+    };
+    const arm = () => ('requestIdleCallback' in window ? requestIdleCallback(start, { timeout: 2500 }) : setTimeout(start, 1200));
+    if (document.readyState === 'complete') arm(); else window.addEventListener('load', arm, { once: true });
+    // Économie de batterie : pause quand le hero n'est plus visible
+    new IntersectionObserver(([en]) => {
+      if (!started || !v.src) return;
+      if (en.isIntersecting) { const p = v.play(); if (p && p.catch) p.catch(() => {}); } else v.pause();
+    }, { threshold: 0.05 }).observe($('.hero'));
+  })();
+
+  /* ==========================================================================
      Vidéo de présentation
      ========================================================================== */
   const cinema = $('[data-cinema]');

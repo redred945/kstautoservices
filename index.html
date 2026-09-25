@@ -194,6 +194,7 @@
         <img src="assets/img/mercedes/classe-s/classe-s-1.webp"
              alt="Mercedes Classe S Maybach bicolore blanc et noir, un bouquet de fleurs blanches sur le capot, vue avant trois-quarts"
              width="1800" height="884" fetchpriority="high" decoding="async">
+        <video class="hero__video" muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-hero-video data-src="assets/img/Home/hero-loop.mp4"></video>
       </div>
       <div class="hero__shade" aria-hidden="true"></div>
 
@@ -220,6 +221,9 @@
           <li>Rolls-Royce</li>
           <li>Maserati</li>
         </ul>
+        <button class="hero__film" type="button" data-cinema-open aria-haspopup="dialog">
+          <svg class="ico" aria-hidden="true"><use href="#i-play"/></svg><span>Voir la présentation</span>
+        </button>
         <a class="scroll-cue" href="#marques" aria-label="Faire défiler vers la suite">
           <span>Défiler</span><i aria-hidden="true"></i>
         </a>
@@ -235,7 +239,7 @@
         </header>
 
         <ul class="brands__grid">
-          <li class="brand" data-reveal>
+          <li class="brand" data-reveal style="--bg:url(../img/mercedes/classe-g/classe-g-1.webp);--bp:50% 45%">
             <p class="brand__idx" aria-hidden="true">I</p>
             <h3 class="brand__name">Mercedes</h3>
             <p class="brand__count">4 véhicules</p>
@@ -243,14 +247,14 @@
             <p class="brand__text">Un mariage en Mercedes : le luxe raffiné et le confort exceptionnel, symboles d'une union où chaque instant est une promesse d'élégance.</p>
             <a class="link-arrow" href="#flotte" data-filter-brand="mercedes">Voir les véhicules <svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></a>
           </li>
-          <li class="brand" data-reveal style="--d:80ms">
+          <li class="brand" data-reveal style="--bg:url(../img/porsche/image5.webp);--bp:42% 50%;--d:80ms">
             <p class="brand__idx" aria-hidden="true">II</p>
             <h3 class="brand__name">Porsche</h3>
             <p class="brand__count">1 véhicule</p>
             <p class="brand__models">Cayenne Coupé</p>
             <a class="link-arrow" href="#flotte" data-filter-brand="porsche">Voir le véhicule <svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></a>
           </li>
-          <li class="brand" data-reveal style="--d:160ms">
+          <li class="brand" data-reveal style="--bg:url(../img/rolls-royce/ghost/image0.webp);--bp:38% 50%;--d:160ms">
             <p class="brand__idx" aria-hidden="true">III</p>
             <h3 class="brand__name">Rolls-Royce</h3>
             <p class="brand__count">1 véhicule</p>
@@ -258,7 +262,7 @@
             <p class="brand__text">Un mariage en Rolls Royce Ghost : une célébration d'amour enveloppée dans le luxe intemporel, une promenade vers l'avenir avec élégance et grâce.</p>
             <a class="link-arrow" href="#flotte" data-filter-brand="rolls-royce">Voir le véhicule <svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></a>
           </li>
-          <li class="brand" data-reveal style="--d:240ms">
+          <li class="brand" data-reveal style="--bg:url(../img/maserati/ghbli/image2.webp);--bp:40% 50%;--d:240ms">
             <p class="brand__idx" aria-hidden="true">IV</p>
             <h3 class="brand__name">Maserati</h3>
             <p class="brand__count">1 véhicule</p>
@@ -299,7 +303,7 @@
               <span class="occasion__n" aria-hidden="true">02</span>
               <div>
                 <h3 class="occasion__title"><svg class="ico" aria-hidden="true"><use href="#i-flute"/></svg>Anniversaire</h3>
-                <p>Une voiture de luxe avec chauffeur pour célébrer votre anniversaire.</p>
+                <p>Devis véhicule de luxe pour mariage, anniversaire et événementiels.</p>
                 <button class="link-arrow" type="button" data-occasion="anniversaire">Demander un devis <svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></button>
               </div>
             </li>

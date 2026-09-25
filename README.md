@@ -51,3 +51,7 @@ Après un changement de `style.css` ou `app.js`, incrémenter `?v=1` dans les ba
 - [ ] Textes des marques Porsche et Maserati : pas de texte d'origine, volontairement sobres.
 - [ ] Icône iOS (`apple-touch-icon`) : utilise le logo non carré ; fournir un PNG carré 180×180 si souhaité.
 - [ ] Vérifier le nom de domaine dans `canonical`, `og:url`, `sitemap.xml` (`https://kstautoservices.com`).
+
+## Vidéo du hero
+
+`assets/img/Home/hero-loop.mp4` est une boucle sans son (25 s, sans la carte de fin de la vidéo d'origine), chargée après le premier affichage et ignorée en mode économie de données ou si l'appareil limite les animations. `video-presentation.mp4` (complète, avec son) s'ouvre via « Voir la présentation ».
