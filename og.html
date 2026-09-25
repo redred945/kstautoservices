@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<!-- Source de l'image de partage assets/img/og-kst.jpg (1200×630), rendue en capture d'écran. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=Jost:wght@400;500&display=block" rel="stylesheet">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { width: 1200px; height: 630px; background: #0a0a0b; overflow: hidden; }
+  .card { position: relative; width: 1200px; height: 630px; color: #f4efe6; font-family: Jost, sans-serif; }
+  .photo { position: absolute; inset: 0 -40px 0 560px; background: url(assets/img/rolls-royce/ghost/image0.webp) 62% 62% / cover; filter: saturate(.95) contrast(1.05); }
+  .shade { position: absolute; inset: 0; background:
+      linear-gradient(90deg, #0a0a0b 46%, rgba(10,10,11,.75) 56%, rgba(10,10,11,.2) 72%, rgba(10,10,11,0) 100%),
+      linear-gradient(0deg, rgba(10,10,11,.75), transparent 38%); }
+  .frame { position: absolute; inset: 22px; border: 1px solid rgba(201,164,92,.55); }
+  .content { position: absolute; left: 70px; top: 56px; width: 640px; }
+  .logo { width: 150px; display: block; filter: drop-shadow(0 0 22px rgba(232,210,154,.25)); }
+  .eyebrow { margin-top: 26px; display: flex; align-items: center; gap: 14px; font: 500 15px/1 Jost; letter-spacing: .3em; text-transform: uppercase; color: #c9a45c; }
+  .eyebrow::before { content: ""; width: 40px; height: 1px; background: #c9a45c; }
+  h1 { margin-top: 18px; font: 300 70px/1 "Cormorant Garamond", serif; letter-spacing: -.005em; }
+  h1 em { font-style: italic; font-weight: 400; background: linear-gradient(100deg, #a8853f, #e8d29a 30%, #c9a45c 58%, #f1e1b0 80%, #a8853f); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .brands { margin-top: 26px; font: 500 14px/1 Jost; letter-spacing: .26em; text-transform: uppercase; color: rgba(244,239,230,.75); }
+  .brands b { color: #c9a45c; font-weight: 500; margin: 0 .6em; }
+  .foot { position: absolute; left: 70px; bottom: 56px; display: flex; gap: 34px; align-items: center; font: 500 20px/1 Jost; letter-spacing: .06em; }
+  .foot span { font-size: 13px; letter-spacing: .26em; text-transform: uppercase; color: #c9a45c; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="photo"></div>
+    <div class="shade"></div>
+    <div class="frame"></div>
+    <div class="content">
+      <img class="logo" src="assets/img/logo/icon-kstautoservices.png" alt="">
+      <p class="eyebrow">Paris &amp; Région Parisienne</p>
+      <h1>Location de voitures<br><em>de luxe</em> avec chauffeur</h1>
+      <p class="brands">Mercedes<b>·</b>Porsche<b>·</b>Rolls-Royce<b>·</b>Maserati</p>
+    </div>
+    <div class="foot"><div>06 48 48 05 58</div><span>Mariages · Événements · Sur devis</span></div>
+  </div>
+</body>
+</html>

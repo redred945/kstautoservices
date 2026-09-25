@@ -59,3 +59,7 @@ Après un changement de `style.css` ou `app.js`, incrémenter `?v=1` dans les ba
 ## Cache
 
 CSS et JS sont mis en cache 1 h par Vercel : à chaque modification, changer le `?v=` de `style.css` et `app.js` dans `index.html` et `mentions-legales.html`, sinon les visiteurs récents gardent l'ancienne version avec la nouvelle page.
+
+## Image de partage
+
+`assets/img/og-kst.jpg` (1200×630) est générée depuis `og.html` (capture d'écran à 1200×630). Les balises `og:image` pointent vers `kstautoservices.vercel.app`, qui reste valable après le branchement du domaine.
