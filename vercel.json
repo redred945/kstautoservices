@@ -1,0 +1,28 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    { "source": "/location-voiture-luxe-paris", "destination": "/#flotte", "statusCode": 301 },
+    { "source": "/location-voiture-luxe-paris/:brand*", "destination": "/#flotte", "statusCode": 301 },
+    { "source": "/devis-location-voiture-luxe-avec-chauffeur-paris", "destination": "/#reservation", "statusCode": 301 }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
+      ]
+    },
+    {
+      "source": "/assets/img/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=2592000" }]
+    },
+    {
+      "source": "/assets/(css|js)/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=3600, must-revalidate" }]
+    }
+  ]
+}
