@@ -614,17 +614,21 @@
 
   function setR(key, val, empty) {
     const el = $(`[data-r="${key}"]`, recapEl);
-    el.textContent = val || empty;
+    const next = val || empty;
+    if (el.textContent !== next) {
+      el.textContent = next;
+      if (val && inBooking) { el.classList.remove('fp-in'); void el.offsetWidth; el.classList.add('fp-in'); }
+    }
     el.classList.toggle('is-empty', !val);
   }
 
   function renderRecap() {
-    setR('occasion', OCC[state.occasion] ? OCC[state.occasion].label : '', 'Non choisie');
-    setR('city', state.city.trim(), 'Non renseignée');
-    setR('date', dateSummary(), 'Non choisie');
+    setR('occasion', OCC[state.occasion] ? OCC[state.occasion].label : '', 'Votre occasion');
+    setR('city', state.city.trim(), 'Ville de l’événement');
+    setR('date', dateSummary(), 'La date de votre événement');
     $('[data-r="vehicles"]', recapEl).innerHTML = state.vehicles.length
       ? state.vehicles.map(id => `<li><span>${esc(vehicles[id].full)}</span><button type="button" class="recap__x" data-remove="${id}" aria-label="Retirer ${esc(vehicles[id].full)} de ma demande"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button></li>`).join('')
-      : '<li class="is-empty">Aucun véhicule choisi</li>';
+      : '<li class="is-empty">Sélectionnez un ou plusieurs véhicules</li>';
   }
 
   function renderCounts() {
@@ -951,6 +955,20 @@
     });
   }
   recapBtn.setAttribute('aria-expanded', 'false');
+
+  // Le faire-part s'incline très légèrement sous le curseur (bureau, souris uniquement).
+  if (window.matchMedia('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)').matches) {
+    recapEl.addEventListener('pointermove', e => {
+      const r = recapEl.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+      recapEl.style.setProperty('--ry', `${(x * 5).toFixed(2)}deg`);
+      recapEl.style.setProperty('--rx', `${(-y * 4).toFixed(2)}deg`);
+    });
+    recapEl.addEventListener('pointerleave', () => {
+      recapEl.style.setProperty('--ry', '0deg');
+      recapEl.style.setProperty('--rx', '0deg');
+    });
+  }
   mqDrawer.addEventListener('change', () => closeOverlay(recapEl, { restore: false }));
 
   /* ==========================================================================
@@ -998,7 +1016,7 @@
 
     if ((el = hit('[data-remove]'))) {
       toggleVehicle(el.dataset.remove, false);
-      const next = $('[data-r="vehicles"] .recap__x', recapEl) || $('.recap__vehicles .recap__edit', recapEl);
+      const next = $('[data-r="vehicles"] .recap__x', recapEl) || $('.fp__edit [data-goto-step="3"]', recapEl);
       if (next) next.focus({ preventScroll: true });
       return;
     }

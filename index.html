@@ -780,47 +780,36 @@
           </form>
 
           <div class="sheet-backdrop" data-recap-backdrop hidden></div>
-          <aside class="recap" id="recap" aria-labelledby="recap-title" data-recap>
-            <div class="recap__head">
-              <h3 id="recap-title">Ma demande</h3>
+          <aside class="recap fp" id="recap" aria-labelledby="recap-title" data-recap>
+            <div class="fp__paper">
               <button type="button" class="icon-btn recap__close" data-recap-close aria-label="Fermer le récapitulatif">
                 <svg class="ico" aria-hidden="true"><use href="#i-close"/></svg>
               </button>
-            </div>
-            <ul class="recap__list">
-              <li>
-                <span class="recap__k">Occasion</span>
-                <span class="recap__v" data-r="occasion"></span>
-                <button type="button" class="recap__edit" data-goto-step="1" aria-label="Modifier l'occasion"><svg class="ico" aria-hidden="true"><use href="#i-edit"/></svg></button>
-              </li>
-              <li>
-                <span class="recap__k">Ville</span>
-                <span class="recap__v" data-r="city"></span>
-                <button type="button" class="recap__edit" data-goto-step="1" data-focus="#f-city" aria-label="Modifier la ville"><svg class="ico" aria-hidden="true"><use href="#i-edit"/></svg></button>
-              </li>
-              <li>
-                <span class="recap__k">Date</span>
-                <span class="recap__v" data-r="date"></span>
-                <button type="button" class="recap__edit" data-goto-step="2" aria-label="Modifier la date"><svg class="ico" aria-hidden="true"><use href="#i-edit"/></svg></button>
-              </li>
-              <li class="recap__vehicles">
-                <span class="recap__k">Véhicules</span>
-                <ul class="recap__cars" data-r="vehicles"></ul>
-                <button type="button" class="recap__edit" data-goto-step="3" aria-label="Modifier les véhicules"><svg class="ico" aria-hidden="true"><use href="#i-edit"/></svg></button>
-              </li>
-              <li>
-                <span class="recap__k">Chauffeur</span>
-                <span class="recap__v">Inclus</span>
-              </li>
-              <li>
-                <span class="recap__k">Tarif</span>
-                <span class="recap__v">Sur devis</span>
-              </li>
-            </ul>
-            <p class="recap__note">Sous réserve de disponibilité, confirmée par KST AutoServices.</p>
-            <div class="recap__foot">
-              <button type="button" class="link" data-clear>Tout effacer</button>
-              <button type="button" class="btn btn--gold btn--sm recap__continue" data-recap-close>Poursuivre</button>
+              <div class="fp__seal" aria-hidden="true"><span>KST</span></div>
+              <h3 class="fp__kicker" id="recap-title">Auto Loc’ · Demande de devis</h3>
+              <div class="fp__orn" aria-hidden="true"><i></i></div>
+              <p class="fp__invite">Vous êtes invité à composer</p>
+              <p class="fp__occ" data-r="occasion"></p>
+              <p class="fp__date" data-r="date"></p>
+              <p class="fp__city" data-r="city"></p>
+              <div class="fp__orn" aria-hidden="true"><i></i></div>
+              <p class="fp__k">Véhicules</p>
+              <ul class="fp__cars" data-r="vehicles"></ul>
+              <ul class="fp__chips">
+                <li>Chauffeur inclus</li>
+                <li>Tarif sur devis</li>
+              </ul>
+              <div class="fp__edit">
+                <button type="button" data-goto-step="1">Occasion</button>
+                <button type="button" data-goto-step="1" data-focus="#f-city">Ville</button>
+                <button type="button" data-goto-step="2">Date</button>
+                <button type="button" data-goto-step="3">Véhicules</button>
+              </div>
+              <p class="fp__note">Sous réserve de disponibilité, confirmée par KST AutoServices.</p>
+              <div class="fp__foot">
+                <button type="button" class="fp__link" data-clear>Tout effacer</button>
+                <button type="button" class="btn btn--gold btn--sm recap__continue" data-recap-close>Poursuivre</button>
+              </div>
             </div>
           </aside>
         </div>
