@@ -26,6 +26,16 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&display=swap">
   <link rel="preload" as="image" href="assets/img/mercedes/classe-s/classe-s-1.webp" fetchpriority="high">
+  <script>
+    /* Splash d'ouverture : une fois par session, jamais si l'utilisateur préfère moins d'animation.
+       Posé avant le CSS pour éviter tout flash ; se referme seul en CSS même si ce script échoue ailleurs. */
+    try {
+      if (!sessionStorage.getItem('kst-splash') && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.documentElement.classList.add('is-splash');
+        sessionStorage.setItem('kst-splash', '1');
+      }
+    } catch (e) {}
+  </script>
   <link rel="stylesheet" href="assets/css/style.css?v=1">
   <script>
     /* Les révélations au scroll ne s'activent que si app.js s'exécute ; sinon tout reste visible. */
@@ -105,6 +115,17 @@
 </head>
 
 <body>
+  <!-- Splash d'ouverture : décoratif, ne bloque jamais le contenu (voir style.css §15 et app.js). -->
+  <div class="splash" data-splash aria-hidden="true">
+    <div class="splash-panel splash-panel--top"></div>
+    <div class="splash-panel splash-panel--bottom"></div>
+    <div class="splash-stage">
+      <div class="splash-logo"><img src="assets/img/logo/icon-kstautoservices.png" alt="" width="888" height="666"></div>
+      <div class="splash-line"><span></span></div>
+      <p class="splash-caption">KST Auto Loc'</p>
+    </div>
+  </div>
+
   <a class="skip" href="#contenu">Aller au contenu</a>
 
   <!-- Sprite d'icônes (trait fin) -->

@@ -535,18 +535,41 @@ h1, h2, h3, h4, p, figure, dl, dd { margin: 0; }
 .hero__title .line:nth-child(1) > span { animation-delay: .2s; }
 .hero__title .line:nth-child(2) > span { animation-delay: .34s; }
 .hero__title .line:nth-child(3) > span { animation-delay: .48s; }
+
+/* Pendant le splash, l'entrée du hero est décalée pour ne pas jouer cachée dessous ;
+   elle reprend son cours dès que .is-splash disparaît (voir app.js), ou au pire au bout
+   d'un délai fixe même si le JS échoue (fill-mode both = état final conservé). */
+html.is-splash .hero__eyebrow { animation-delay: 1.6s; }
+html.is-splash .hero__title .line:nth-child(1) > span { animation-delay: 1.7s; }
+html.is-splash .hero__title .line:nth-child(2) > span { animation-delay: 1.84s; }
+html.is-splash .hero__title .line:nth-child(3) > span { animation-delay: 1.98s; }
 .hero__title em {
   font-style: italic;
   color: var(--gold-light);
 }
 @supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  /* « de luxe » : or poli, un reflet lumineux traverse le mot à intervalles réguliers */
   .hero__title em {
-    background: linear-gradient(100deg, #e8d29a 10%, #c9a45c 60%, #e8d29a 100%);
+    padding-right: .08em;
+    background:
+      linear-gradient(105deg, transparent 42%, rgba(255, 252, 240, .9) 47.5%, #fff 50%, rgba(255, 252, 240, .9) 52.5%, transparent 58%) 150% 0 / 300% 100% no-repeat,
+      linear-gradient(100deg, #a8853f 0%, #e8d29a 26%, #b8914a 52%, #f1e1b0 76%, #a8853f 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent;
+    filter: drop-shadow(0 0 22px rgba(232, 210, 154, .38)) drop-shadow(0 2px 1px rgba(0, 0, 0, .35));
+    animation: luxeShine 5.5s var(--ease) 1.4s infinite;
   }
+  html.is-splash .hero__title em { animation-delay: 3.2s; }
+}
+@keyframes luxeShine {
+  0%   { background-position: 150% 0, 0 0; }
+  38%  { background-position: -50% 0, 0 0; }
+  100% { background-position: -50% 0, 0 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero__title em { animation: none; background-position: -50% 0, 0 0; }
 }
 
 .hero__row { display: grid; gap: 1.8rem 3rem; animation: fade 1.6s var(--ease-out) .75s both; }
@@ -1002,6 +1025,7 @@ h1, h2, h3, h4, p, figure, dl, dd { margin: 0; }
 }
 
 .bcard {
+  min-width: 0; /* évite le débordement horizontal : .bcard est un item de grille (.booking__layout) */
   background: linear-gradient(180deg, var(--graphite), var(--coal));
   border: 1px solid var(--line);
   border-top-color: var(--gold);
@@ -1999,4 +2023,212 @@ h1, h2, h3, h4, p, figure, dl, dd { margin: 0; }
 
 @media (max-width: 899.98px) {
   .hero__video { filter: saturate(1) contrast(1.05) brightness(.72); }
+}
+
+/* ==========================================================================
+   15. Splash d'ouverture — une fois par session, ≤ 2,2 s, s'efface seul en CSS
+   ========================================================================== */
+.splash { display: none; }
+html.is-splash .splash {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  cursor: pointer;
+  background: var(--ink);
+  animation: splash-gone 0s linear 2.2s forwards;
+}
+.splash-panel {
+  position: absolute;
+  left: 0; right: 0;
+  height: calc(50% + 1px);
+  background: var(--ink);
+  will-change: transform;
+}
+.splash-panel--top { top: 0; animation: splash-open-up .55s var(--ease) 1.5s forwards; }
+.splash-panel--bottom { bottom: 0; animation: splash-open-down .55s var(--ease) 1.5s forwards; }
+
+.splash-stage {
+  position: absolute; inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.1rem;
+  animation: splash-fade-out .3s ease 1.4s forwards;
+}
+.splash-logo {
+  width: min(120px, 26vw);
+  opacity: 0;
+  transform: scale(.9);
+  animation: splash-logo-in .6s var(--ease-out) .1s forwards;
+}
+.splash-logo img { width: 100%; height: auto; filter: drop-shadow(0 0 26px rgba(201, 164, 92, .35)); }
+.splash-line {
+  width: min(160px, 40vw);
+  height: 1px;
+  background: var(--line);
+  overflow: hidden;
+}
+.splash-line span {
+  display: block;
+  height: 100%;
+  background: var(--gold-grad);
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: splash-line-draw .55s var(--ease-out) .45s forwards;
+}
+.splash-caption {
+  margin: 0;
+  font: 500 .72rem/1 var(--sans);
+  letter-spacing: .5em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+  opacity: 0;
+  animation: splash-caption-in .6s var(--ease-out) .6s forwards;
+}
+
+/* Passer le splash au clic / toucher / touche (app.js) : fermeture plus rapide */
+.splash.is-skipping .splash-panel--top { animation: splash-skip-up .4s var(--ease) forwards; }
+.splash.is-skipping .splash-panel--bottom { animation: splash-skip-down .4s var(--ease) forwards; }
+.splash.is-skipping .splash-stage { animation: splash-fade-out .2s ease forwards; }
+
+@keyframes splash-gone { to { visibility: hidden; } }
+@keyframes splash-open-up { to { transform: translateY(-100%); } }
+@keyframes splash-open-down { to { transform: translateY(100%); } }
+@keyframes splash-skip-up { to { transform: translateY(-100%); } }
+@keyframes splash-skip-down { to { transform: translateY(100%); } }
+@keyframes splash-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes splash-logo-in { to { opacity: 1; transform: none; } }
+@keyframes splash-line-draw { to { transform: scaleX(1); } }
+@keyframes splash-caption-in { from { opacity: 0; letter-spacing: .8em; } to { opacity: 1; letter-spacing: .5em; } }
+
+/* ==========================================================================
+   16. Rangées glissables (mobile) — scroll natif, scroll vertical intact
+   ========================================================================== */
+@media (max-width: 899.98px) {
+  .brands__grid,
+  .occasions,
+  .fleet__grid,
+  .facts,
+  .contact__cards {
+    display: flex;
+    gap: .9rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    margin-inline: calc(var(--gutter) * -1);
+    padding-inline: var(--gutter);
+    padding-bottom: .3rem;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    background: none;
+    border: 0;
+  }
+  .brands__grid::-webkit-scrollbar,
+  .occasions::-webkit-scrollbar,
+  .fleet__grid::-webkit-scrollbar,
+  .facts::-webkit-scrollbar,
+  .contact__cards::-webkit-scrollbar { display: none; }
+
+  /* .occasions est imbriquée dans un item de grille (.events__copy dans .events__grid) :
+     sans min-width:0, cet item hérite d'une largeur minimale = contenu total de la
+     rangée et pousse toute la page en scroll horizontal. */
+  .events__copy { min-width: 0; }
+
+  /* Marques : cartes portrait */
+  .brands__grid > .brand {
+    flex: 0 0 82%;
+    min-width: 0;
+    min-height: 420px;
+    scroll-snap-align: start;
+  }
+
+  /* Événements : cartes plutôt qu'une liste à puces pleine largeur */
+  .occasions { border-top: 0; margin-top: 1.6rem; }
+  .occasion {
+    flex: 0 0 82%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    padding: 1.6rem 1.5rem;
+    border: 1px solid rgba(122, 95, 39, .3);
+    border-radius: 3px;
+    background: rgba(122, 95, 39, .05);
+    scroll-snap-align: start;
+  }
+  .occasion .link-arrow { margin-top: .3rem; }
+
+  /* Flotte : la carte « large » impaire redevient une carte normale sur mobile */
+  .fleet__grid { gap: 1rem; }
+  .fleet__grid > .vcard {
+    flex: 0 0 86%;
+    min-width: 0;
+    scroll-snap-align: start;
+  }
+  .vcard.is-wide { grid-column: auto; flex-direction: column; }
+  .vcard.is-wide .vcard__media { flex: none; aspect-ratio: 16 / 9; min-height: 0; }
+  .vcard.is-wide .vcard__body { flex: 1; justify-content: flex-start; padding: 1.5rem 1.6rem 1.7rem; }
+  .vcard.is-wide .vcard__actions { margin-top: auto; }
+
+  /* Faits : rangée compacte au lieu d'une grille 2×2 */
+  .facts { margin-top: 1.8rem; gap: 0; }
+  .fact {
+    flex: 0 0 42%;
+    min-width: 0;
+    padding: 1.1rem .3rem;
+    border-top: 0;
+    scroll-snap-align: start;
+  }
+  .fact + .fact { border-left: 1px solid var(--line); }
+  .fact dd { font-size: clamp(2rem, 9vw, 2.6rem); }
+
+  /* Contact : cartes compactes (le vrai item flex est le <li>, .contact-card est le <a> à l'intérieur) */
+  .contact__cards { gap: 1px; margin-bottom: 2.4rem; background: none; border: 0; }
+  .contact__cards > li {
+    flex: 0 0 82%;
+    min-width: 0;
+    scroll-snap-align: start;
+  }
+  .contact-card { min-height: 140px; height: 100%; border: 1px solid var(--line); }
+  /* Carte assez étroite pour qu'une adresse e-mail sans espace se casse lettre à lettre
+     à la taille desktop : on réduit la police de la valeur sur mobile. */
+  .contact-card__v { font-size: 1.05rem; line-height: 1.35; }
+
+  /* Indicateur discret de progression sous chaque rangée (posé par app.js) */
+  .swipe-track {
+    height: 2px;
+    margin: .7rem var(--gutter) 0;
+    background: var(--line);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .swipe-track[hidden] { display: none; }
+  .swipe-track span {
+    display: block;
+    height: 100%;
+    background: var(--gold-grad);
+    will-change: transform, width;
+  }
+
+  /* Zone desservie : chips compactes au lieu de la grande liste */
+  .zone__list { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.4rem; }
+  .zone__list li {
+    display: inline-flex;
+    align-items: center;
+    padding: .55rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font: 400 .85rem/1 var(--sans);
+    color: var(--ivory-dim);
+  }
+  .zone__list span { display: none; }
+
+  /* Espacements verticaux resserrés */
+  .section { padding-block: clamp(46px, 12vw, 96px); }
+  .section-head { margin-bottom: clamp(1.6rem, 6vw, 3rem); }
+  .h2 { font-size: clamp(1.85rem, 7.2vw, 4rem); }
 }

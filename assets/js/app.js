@@ -37,6 +37,35 @@
   const RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const smooth = () => (RM ? 'auto' : 'smooth');
 
+  /* ==========================================================================
+     Splash (posé par le script inline du <head>, une fois par session) :
+     passe au clic / toucher / touche. S'il échoue, le CSS seul referme le
+     splash à 2,2 s et joue l'entrée du hero (fill-mode both) sans aide du JS.
+     ========================================================================== */
+  (function splash() {
+    const root = document.documentElement;
+    const splashEl = document.querySelector('[data-splash]');
+    if (!splashEl || !root.classList.contains('is-splash')) return;
+    const door = splashEl.querySelector('.splash-panel--bottom');
+    let done = false;
+    const EVENTS = ['pointerdown', 'touchstart', 'keydown'];
+    function finish() {
+      if (done) return;
+      done = true;
+      root.classList.remove('is-splash');
+      splashEl.remove();
+      EVENTS.forEach(t => window.removeEventListener(t, skip));
+    }
+    function skip() {
+      if (done || splashEl.classList.contains('is-skipping')) return;
+      splashEl.classList.add('is-skipping');
+      setTimeout(finish, 420);
+    }
+    EVENTS.forEach(t => window.addEventListener(t, skip, { passive: true }));
+    if (door) door.addEventListener('animationend', finish, { once: true });
+    setTimeout(finish, 2400);
+  })();
+
   const storage = {
     get() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (e) { return null; } },
     set(v) { try { localStorage.setItem(STORE_KEY, JSON.stringify(v)); } catch (e) { /* stockage indisponible */ } },
@@ -78,6 +107,7 @@
 
   /* ---------- Données véhicules (lues dans le HTML) ---------- */
   const cards = $$('[data-vehicle]');
+  const fleetGrid = $('[data-fleet]');
   const vehicles = {};
   const order = [];
   cards.forEach(card => {
@@ -279,6 +309,12 @@
       if (show) shown.push(c);
     });
     if (shown.length % 2 === 1) shown[shown.length - 1].classList.add('is-wide');
+    /* Rangée glissable (mobile) : on revient au début après un filtre, et on
+       recalcule l'indicateur de progression puisque la largeur a changé. */
+    if (fleetGrid) {
+      fleetGrid.scrollTo({ left: 0, behavior: 'auto' });
+      requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
+    }
     if (animate) {
       shown.forEach((c, i) => {
         c.classList.add('is-in');
@@ -1180,6 +1216,43 @@
     $$('[data-reveal]').forEach(el => el.classList.add('is-in'));
     cards.forEach(c => c.classList.add('is-in'));
   }
+
+  /* ==========================================================================
+     Rangées glissables (mobile) : indicateur discret de progression
+     Scroll natif (scroll-snap), aucun détournement du scroll vertical.
+     ========================================================================== */
+  (function swipeRows() {
+    function onFrame(fn) {
+      let ticking = false;
+      return () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => { ticking = false; fn(); });
+      };
+    }
+    const rows = $$('.brands__grid, .occasions, .fleet__grid, .facts, .contact__cards');
+    rows.forEach(row => {
+      const track = document.createElement('div');
+      const thumb = document.createElement('span');
+      track.className = 'swipe-track';
+      track.setAttribute('aria-hidden', 'true');
+      track.appendChild(thumb);
+      row.insertAdjacentElement('afterend', track);
+
+      function update() {
+        const max = row.scrollWidth - row.clientWidth;
+        if (max <= 2) { track.hidden = true; return; }
+        track.hidden = false;
+        const ratio = row.clientWidth / row.scrollWidth;
+        const progress = row.scrollLeft / max;
+        thumb.style.width = `${ratio * 100}%`;
+        thumb.style.transform = `translateX(${progress * (1 / ratio - 1) * 100}%)`;
+      }
+      row.addEventListener('scroll', onFrame(update), { passive: true });
+      window.addEventListener('resize', onFrame(update));
+      update();
+    });
+  })();
 
   /* Horaires : jour courant et état (heure de Paris, d'après les horaires affichés) */
   const OPEN = { 1: [510, 1350], 2: [510, 1350], 3: [510, 1350], 4: [510, 1350], 5: [510, 1350], 6: [570, 1410] };
