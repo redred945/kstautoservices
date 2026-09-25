@@ -55,3 +55,7 @@ Après un changement de `style.css` ou `app.js`, incrémenter `?v=1` dans les ba
 ## Vidéo du hero
 
 `assets/img/Home/hero-loop.mp4` est une boucle sans son (25 s, sans la carte de fin de la vidéo d'origine), chargée après le premier affichage et ignorée en mode économie de données ou si l'appareil limite les animations. `video-presentation.mp4` (complète, avec son) s'ouvre via « Voir la présentation ».
+
+## Cache
+
+CSS et JS sont mis en cache 1 h par Vercel : à chaque modification, changer le `?v=` de `style.css` et `app.js` dans `index.html` et `mentions-legales.html`, sinon les visiteurs récents gardent l'ancienne version avec la nouvelle page.
