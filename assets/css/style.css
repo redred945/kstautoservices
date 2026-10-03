@@ -1076,11 +1076,11 @@ html.is-splash .hero__title .line:nth-child(3) > span { animation-delay: 2.98s; 
 .stepper__track { position: relative; height: 1px; margin-top: .35rem; background: var(--line-soft); }
 .stepper__track i {
   position: absolute; left: 0; top: 0;
-  height: 1px; width: 20%;
+  height: 1px; width: 16.667%;
   background: var(--gold-grad);
   transition: width .9s var(--ease-out);
 }
-/* 5 étapes : selon la largeur réellement disponible, on n'affiche que le libellé de l'étape en cours, puis tous */
+/* 6 étapes : selon la largeur réellement disponible, on n'affiche que le libellé de l'étape en cours, puis tous */
 @container (min-width: 340px) {
   .stepper__btn[aria-current="step"] .stepper__label { display: inline; }
 }
@@ -1125,7 +1125,7 @@ html.is-splash .hero__title .line:nth-child(3) > span { animation-delay: 2.98s; 
 }
 .recap-toggle { position: relative; }
 .recap-toggle .ico { display: none; font-size: 1.25rem; }
-/* petits écrans : 5 étapes + bouton « Ma demande » en icône (le texte reste lu par les lecteurs d'écran) */
+/* petits écrans : 6 étapes + bouton « Ma demande » en icône (le texte reste lu par les lecteurs d'écran) */
 @media (max-width: 699.98px) {
   .recap-toggle { gap: .5rem; padding: 0 .65rem; }
   .recap-toggle .ico { display: block; }
@@ -2677,4 +2677,215 @@ html.is-splash .splash {
   }
   .faq { display: flex; flex-direction: column; }
   .faq.is-all .faq__more { display: none; }
+}
+
+/* ==========================================================================
+   21. Étape 05 « Forfait et options » + lignes forfait/options du faire-part
+   Les tokens du thème clair (--gold, --line, --ivory…) s'appliquent déjà
+   dans .booking ; l'or vif du dégradé reste réservé aux coches.
+   ========================================================================== */
+.pk { min-width: 0; margin: 0 0 1.5rem; padding: 0; border: 0; }
+.pk__legend {
+  display: block;
+  width: 100%;
+  margin-bottom: .85rem;
+  padding: 0;
+  font: 500 .68rem/1.3 var(--sans);
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--ivory-dim);
+}
+.pk__legend .opt { letter-spacing: .06em; text-transform: none; color: var(--ivory-mute); font-weight: 400; }
+.pk__help { display: flex; flex-wrap: wrap; align-items: center; gap: 0 .9rem; margin-top: .8rem; font: italic 400 1.05rem/1.5 var(--serif); color: var(--ivory-dim); }
+.pk__help .link { padding-block: .6rem; }
+.pk--opts { margin-top: 1.8rem; }
+
+/* forfait : pastilles de durée (grille 3 x 2 sur mobile, rangée de 6 sur bureau) */
+.hrs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem; }
+@media (min-width: 560px) { .hrs { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .7rem; } }
+.hrs__item { position: relative; display: block; cursor: pointer; }
+.hrs__item--wide { grid-column: 1 / -1; }
+.hrs__item input {
+  position: absolute;
+  width: 1px; height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.hrs__box {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: .4rem;
+  min-height: 80px;
+  padding: .8rem .4rem .75rem;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: #fff;
+  box-shadow: 0 10px 24px -20px rgba(26, 23, 18, .45);
+  text-align: center;
+  transition: border-color .4s var(--ease), background-color .4s var(--ease), box-shadow .4s var(--ease);
+}
+.hrs__n { font: 500 2.2rem/.9 var(--serif); letter-spacing: -.01em; color: var(--ivory); transition: color .4s var(--ease); }
+.hrs__u { font: 500 .56rem/1 var(--sans); letter-spacing: .26em; text-indent: .26em; text-transform: uppercase; color: var(--ivory-mute); transition: color .4s var(--ease); }
+.hrs__box--wide { flex-direction: row; justify-content: flex-start; gap: .7rem; min-height: 56px; padding: .6rem 1rem; text-align: left; }
+.hrs__box--wide .ico { flex: none; width: 1.35rem; height: 1.35rem; color: var(--gold); }
+.hrs__t { font: 500 1.15rem/1.2 var(--serif); }
+.hrs__s { margin-left: auto; font: italic 400 1rem/1.2 var(--serif); color: var(--ivory-mute); }
+.hrs__item:hover .hrs__box { border-color: var(--line-strong); }
+.hrs__item input:checked + .hrs__box {
+  border-color: var(--gold);
+  background: linear-gradient(180deg, rgba(236, 217, 163, .42), rgba(201, 164, 92, .16));
+  box-shadow: inset 0 0 0 1px var(--gold), 0 12px 26px -18px rgba(122, 95, 39, .6);
+}
+.hrs__item input:checked + .hrs__box .hrs__n { color: #3d2f10; }
+.hrs__item input:checked + .hrs__box .hrs__u { color: var(--gold); }
+.hrs__item input:focus-visible + .hrs__box { outline: 2px solid var(--gold-light); outline-offset: 3px; }
+.hrs__other { max-width: 440px; margin: .9rem 0 0; }
+.hrs__other[hidden] { display: none; }
+.hrs__other:not([hidden]) { animation: panelIn .5s var(--ease-out) both; }
+
+/* inclus dans la prestation : bloc discret, non sélectionnable */
+.incl {
+  margin: 1.5rem 0 0;
+  padding: .95rem 1.2rem 1rem;
+  border: 1px dashed var(--line-strong);
+  border-radius: 3px;
+  background: rgba(201, 164, 92, .06);
+}
+.incl__title { font: italic 500 1.2rem/1.2 var(--serif); color: var(--ivory); }
+.incl__list { display: flex; flex-wrap: wrap; gap: .45rem 1.6rem; margin-top: .65rem; }
+.incl__list li { display: flex; align-items: center; gap: .6rem; font-size: .95rem; line-height: 1.35; color: var(--ivory-dim); }
+.incl__tick {
+  flex: none;
+  display: grid; place-items: center;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--gold-grad);
+  color: #15110a;
+}
+.incl__tick .ico { width: 12px; height: 12px; stroke-width: 2; }
+
+/* options : cartes à cocher (checkbox natives masquées visuellement, focus visible conservé) */
+.opts { display: grid; grid-template-columns: minmax(0, 1fr); gap: .65rem; }
+@media (min-width: 760px) { .opts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; } }
+.ocard {
+  position: relative;
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .9rem;
+  min-height: 64px;
+  padding: .75rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: #fff;
+  box-shadow: 0 10px 24px -20px rgba(26, 23, 18, .45);
+  cursor: pointer;
+  transition: border-color .4s var(--ease), background-color .4s var(--ease), box-shadow .4s var(--ease);
+}
+.ocard input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.ocard:hover { border-color: var(--line-strong); }
+.ocard__check {
+  display: grid; place-items: center;
+  width: 28px; height: 28px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: #fff;
+  color: transparent;
+  transition: background-color .4s var(--ease), color .4s var(--ease), border-color .4s var(--ease);
+}
+.ocard__check .ico { width: 15px; height: 15px; stroke-width: 2; }
+.ocard__name { font: 500 1.12rem/1.25 var(--serif); color: var(--ivory); }
+.ocard__price { font: 500 1.3rem/1 var(--serif); white-space: nowrap; color: var(--gold); }
+.ocard.is-on {
+  border-color: var(--gold);
+  background: linear-gradient(180deg, rgba(236, 217, 163, .3), rgba(201, 164, 92, .1));
+  box-shadow: inset 0 0 0 1px var(--gold), 0 12px 26px -20px rgba(122, 95, 39, .6);
+}
+.ocard.is-on .ocard__check { background: var(--gold-grad); border-color: transparent; color: #15110a; }
+.ocard:has(input:focus-visible) { outline: 2px solid var(--gold-light); outline-offset: 3px; }
+@supports not selector(:has(*)) {
+  .ocard:focus-within { outline: 2px solid var(--gold-light); outline-offset: 3px; }
+}
+
+/* km supplémentaires : information, pas une option */
+.kmrow {
+  display: flex; align-items: flex-start; gap: .8rem;
+  margin-top: .85rem;
+  padding: .85rem 1rem;
+  border: 1px dashed var(--line-strong);
+  border-radius: 3px;
+  font-size: .94rem;
+  line-height: 1.5;
+  color: var(--ivory-dim);
+}
+.kmrow .ico { flex: none; width: 1.3rem; height: 1.3rem; margin-top: .1rem; color: var(--gold); }
+.kmrow strong { display: block; font: 500 1.08rem/1.3 var(--serif); color: var(--ivory); }
+
+/* sous-total (zone aria-live) */
+.optsum { margin-top: 1.4rem; padding-top: 1.1rem; border-top: 1px solid var(--line-soft); }
+.optsum p { margin: 0; }
+.optsum__row { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.optsum__k { font: 500 .68rem/1.3 var(--sans); letter-spacing: .2em; text-transform: uppercase; color: var(--ivory-dim); }
+.optsum__v { font: 500 2rem/1 var(--serif); color: var(--gold); white-space: nowrap; }
+.optsum__n, .optsum__none { margin-top: .3rem; font: italic 400 1.05rem/1.4 var(--serif); color: var(--ivory-mute); }
+.optsum__none { margin-top: 0; }
+
+/* faire-part : forfait et options, deux lignes discrètes sous les véhicules */
+.fp__extras { width: 100%; margin-top: 1.15rem; padding-top: .9rem; border-top: 1px solid rgba(168, 133, 63, .3); }
+.fp__row { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 0 .85rem; margin-top: .3rem; }
+.fp__v { font: 400 clamp(1.2rem, 1.8vw, 1.4rem)/1.3 var(--serif); overflow-wrap: anywhere; }
+.fp__v.is-empty { font-size: 1.05rem; font-style: italic; font-weight: 300; color: var(--paper-mute); opacity: .62; }
+.fp__sub { margin-top: .1rem; font: italic 400 .98rem/1.35 var(--serif); color: var(--paper-mute); }
+.fp__sub[hidden] { display: none; }
+@media (max-width: 380px) {
+  .hrs__n { font-size: 2rem; }
+  .ocard { gap: .7rem; padding-inline: .8rem; }
+}
+.hrs__n, .ocard__price, .optsum__v { font-variant-numeric: lining-nums; }
+.fp__edit button { padding: 0 .45rem; letter-spacing: .16em; }
+
+/* Stepper à 6 étapes : libellés resserrés pour tenir sur une ligne, puis libellé de l'étape courante seul quand la place manque */
+.stepper__btn { gap: .55rem; letter-spacing: .14em; }
+@container (min-width: 700px) {
+  .stepper__list { gap: clamp(.1rem, .5vw, .6rem); }
+  .stepper__btn[data-done="true"]:not([aria-current="step"]) .stepper__label::after { margin-left: .5em; }
+}
+.stepper__btn { position: relative; }
+@container (min-width: 700px) {
+  .stepper__list { gap: clamp(.1rem, .3vw, .35rem); }
+  /* repère « étape remplie » : posé sous le libellé, il ne prend plus de place en largeur */
+  .stepper__btn[data-done="true"]:not([aria-current="step"]) .stepper__label::after {
+    position: absolute; left: 50%; bottom: 7px;
+    margin: 0;
+    transform: translateX(-50%);
+  }
+}
+/* petits écrans : 6 numéros + « Ma demande » sur une ligne dès 360 px, chaque numéro partage la place restante */
+@media (max-width: 430px) {
+  .bcard__bar { gap: .45rem; padding-inline: .55rem; }
+  .recap-toggle { gap: .35rem; padding: 0 .5rem; }
+  .stepper__list li { flex: 1 1 0; min-width: 0; }
+  .stepper__btn { width: 100%; min-width: 0; padding: 0; justify-content: center; }
+  .stepper__num { font-size: 1.15rem; }
+}
+
+/* Faire-part sur écrans bas (portables 768 px) : version resserrée pour qu'il tienne dans la fenêtre,
+   avec un défilement interne en dernier recours */
+@media (min-width: 1000px) {
+  .recap.fp { max-height: calc(100vh - var(--header-h) - 2rem); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+}
+@media (min-width: 1000px) and (max-height: 860px) {
+  .recap.fp { top: calc(var(--header-h) + .75rem); max-height: calc(100vh - var(--header-h) - 1.25rem); }
+  .fp__paper { padding-top: 1.15rem; padding-bottom: 1rem; }
+  .fp__seal { width: 46px; height: 46px; font-size: 1.1rem; }
+  .fp__kicker { margin-top: .6rem; }
+  .fp__orn { margin: .7rem 0; }
+  .fp__invite { display: none; }
+  .fp__occ { margin-top: 0; font-size: clamp(2.1rem, 3.2vw, 2.7rem); }
+  .fp__date { margin-top: .45rem; }
+  .fp__cars { margin-top: .5rem; }
+  .fp__chips { margin-top: .8rem; }
+  .fp__edit { margin-top: .6rem; }
+  .fp__extras { margin-top: .75rem; padding-top: .55rem; }
+  .fp__note { margin-top: .2rem; padding-top: .7rem; }
+}
+@media (max-width: 430px) {
+  .fp__edit { gap: 0; }
+  .fp__edit button { padding: 0 .3rem; font-size: .54rem; letter-spacing: .12em; }
 }

@@ -41,7 +41,7 @@
       }
     } catch (e) {}
   </script>
-  <link rel="stylesheet" href="assets/css/style.css?v=202610031831">
+  <link rel="stylesheet" href="assets/css/style.css?v=202610031850">
   <script>
     /* Les révélations au scroll ne s'activent que si app.js s'exécute ; sinon tout reste visible. */
     document.documentElement.classList.add('js');
@@ -654,7 +654,8 @@
                   <li><button type="button" class="stepper__btn" data-step-btn="2" aria-label="Étape 2 : Date et heure"><span class="stepper__num" aria-hidden="true">02</span><span class="stepper__label">Date &amp; heure</span></button></li>
                   <li><button type="button" class="stepper__btn" data-step-btn="3" aria-label="Étape 3 : Trajet"><span class="stepper__num" aria-hidden="true">03</span><span class="stepper__label">Trajet</span></button></li>
                   <li><button type="button" class="stepper__btn" data-step-btn="4" aria-label="Étape 4 : Véhicules"><span class="stepper__num" aria-hidden="true">04</span><span class="stepper__label">Véhicules</span></button></li>
-                  <li><button type="button" class="stepper__btn" data-step-btn="5" aria-label="Étape 5 : Coordonnées"><span class="stepper__num" aria-hidden="true">05</span><span class="stepper__label">Coordonnées</span></button></li>
+                  <li><button type="button" class="stepper__btn" data-step-btn="5" aria-label="Étape 5 : Forfait et options"><span class="stepper__num" aria-hidden="true">05</span><span class="stepper__label">Forfait</span></button></li>
+                  <li><button type="button" class="stepper__btn" data-step-btn="6" aria-label="Étape 6 : Coordonnées"><span class="stepper__num" aria-hidden="true">06</span><span class="stepper__label">Coordonnées</span></button></li>
                 </ol>
                 <div class="stepper__track" aria-hidden="true"><i data-stepper-fill></i></div>
               </nav>
@@ -766,9 +767,50 @@
                 </div>
               </section>
 
-              <!-- Étape 5 : coordonnées et envoi -->
+              <!-- Étape 5 : forfait et options (cartes rendues par app.js) -->
               <section class="panel" data-panel="5" aria-labelledby="p5-title" hidden>
-                <h3 class="panel__title" id="p5-title" tabindex="-1"><span class="panel__num" aria-hidden="true">05</span>Vos coordonnées</h3>
+                <h3 class="panel__title" id="p5-title" tabindex="-1"><span class="panel__num" aria-hidden="true">05</span>Forfait et options</h3>
+                <p class="panel__hint">Choisissez la durée de la prestation et, si vous le souhaitez, quelques attentions pour la journée. Tout est facultatif.</p>
+
+                <fieldset class="pk">
+                  <legend class="pk__legend" id="pk-forfait-legend">Forfait <span class="opt">(durée de la prestation)</span></legend>
+                  <div class="hrs" role="radiogroup" aria-labelledby="pk-forfait-legend" data-forfaits></div>
+                  <div class="field hrs__other" data-forfait-other hidden>
+                    <label for="f-forfait-autre">Durée souhaitée</label>
+                    <input id="f-forfait-autre" name="forfait_autre" type="text" autocomplete="off" autocapitalize="off" enterkeyhint="done" maxlength="60" placeholder="Indiquez la durée souhaitée">
+                  </div>
+                  <p class="pk__help">KST AutoServices vous conseillera si besoin. <button type="button" class="link" data-forfait-clear hidden>Effacer mon choix</button></p>
+                </fieldset>
+
+                <div class="incl" role="group" aria-labelledby="incl-title">
+                  <p class="incl__title" id="incl-title">Inclus dans la prestation</p>
+                  <ul class="incl__list">
+                    <li><span class="incl__tick" aria-hidden="true"><svg class="ico"><use href="#i-check"/></svg></span>Bouteille d’eau</li>
+                    <li><span class="incl__tick" aria-hidden="true"><svg class="ico"><use href="#i-check"/></svg></span>Bouquet artificiel</li>
+                    <li><span class="incl__tick" aria-hidden="true"><svg class="ico"><use href="#i-check"/></svg></span>Distance : 130 km inclus</li>
+                  </ul>
+                </div>
+
+                <fieldset class="pk pk--opts">
+                  <legend class="pk__legend">Options <span class="opt">(facultatif)</span></legend>
+                  <ul class="opts" data-options></ul>
+                  <p class="kmrow">
+                    <svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg>
+                    <span><strong>Km supplémentaires : 3 €/km</strong>Au-delà de 130 km : 3 €/km, calculé par KST AutoServices d’après votre trajet.</span>
+                  </p>
+                </fieldset>
+
+                <div class="optsum" data-opt-sum aria-live="polite" aria-atomic="true"></div>
+
+                <div class="panel__nav">
+                  <button type="button" class="btn btn--text" data-prev><svg class="ico" aria-hidden="true"><use href="#i-chev-l"/></svg> Retour</button>
+                  <button type="button" class="btn btn--gold" data-next>Continuer <svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+                </div>
+              </section>
+
+              <!-- Étape 6 : coordonnées et envoi -->
+              <section class="panel" data-panel="6" aria-labelledby="p6-title" hidden>
+                <h3 class="panel__title" id="p6-title" tabindex="-1"><span class="panel__num" aria-hidden="true">06</span>Vos coordonnées</h3>
                 <p class="panel__hint">Votre demande est rédigée d'après vos choix ; vous pouvez la modifier librement.</p>
 
                 <div class="mini-recap" data-mini-recap></div>
@@ -850,6 +892,11 @@
               <div class="fp__orn" aria-hidden="true"><i></i></div>
               <p class="fp__k">Véhicules</p>
               <ul class="fp__cars" data-r="vehicles"></ul>
+              <div class="fp__extras">
+                <p class="fp__row"><span class="fp__k">Forfait</span><span class="fp__v" data-r="forfait"></span></p>
+                <p class="fp__row"><span class="fp__k">Options</span><span class="fp__v" data-r="options"></span></p>
+                <p class="fp__sub" data-r="optnames" hidden></p>
+              </div>
               <ul class="fp__chips">
                 <li>Chauffeur inclus</li>
                 <li>Tarif sur devis</li>
@@ -859,6 +906,7 @@
                 <button type="button" data-goto-step="2">Date</button>
                 <button type="button" data-goto-step="3">Trajet</button>
                 <button type="button" data-goto-step="4">Véhicules</button>
+                <button type="button" data-goto-step="5">Forfait</button>
               </div>
               <p class="fp__note">Sous réserve de disponibilité, confirmée par KST AutoServices.</p>
               <div class="fp__foot">
@@ -931,7 +979,7 @@
             </a>
           </li>
           <li>
-            <a class="contact-card" href="#reservation" data-goto-step="5">
+            <a class="contact-card" href="#reservation" data-goto-step="6">
               <svg class="ico" aria-hidden="true"><use href="#i-cal"/></svg>
               <span class="contact-card__k">Formulaire</span>
               <span class="contact-card__v">Demande de devis</span>
@@ -1092,6 +1140,6 @@
     <p class="noscript">Le formulaire de devis nécessite JavaScript. Appelez-nous au <a href="tel:+33648480558">06 48 48 05 58</a> ou écrivez à <a href="mailto:contact@kstautoservices.com">contact@kstautoservices.com</a>.</p>
   </noscript>
 
-  <script src="assets/js/app.js?v=202610031831" defer></script>
+  <script src="assets/js/app.js?v=202610031850" defer></script>
 </body>
 </html>

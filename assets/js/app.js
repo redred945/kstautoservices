@@ -29,7 +29,7 @@
   const VIDEO_SRC = 'assets/img/Home/video-presentation.mp4';
   const BAN_URL = 'https://api-adresse.data.gouv.fr/search/';   // Base Adresse Nationale (gratuite, sans clé) ; lat/lon = priorité à l'Île-de-France
   const MAX_POINTS = 8;                                          // prise en charge + 7 étapes
-  const STEPS = 5;
+  const STEPS = 6;
 
   /* ---------- Utilitaires ---------- */
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -131,6 +131,22 @@
     autre: { label: 'Autre événement', phrase: 'un événement', icon: 'i-spark' }
   };
 
+  /* Forfait (durée) et options payantes, d'après la fiche de commande du client.
+     Aucun prix de forfait : il reste sur devis. Les km supplémentaires (3 €/km au-delà de 130 km)
+     ne sont pas une option : KST les calcule d'après le trajet. */
+  const FORFAITS = ['5h', '6h', '7h', '8h', '9h', '10h'];
+  const OPTIONS = [
+    { id: 'champagne', label: 'Bouteille de champagne', short: 'Champagne', price: 150 },
+    { id: 'bouquet', label: 'Bouquet floral', short: 'Bouquet floral', price: 150 },
+    { id: 'plaque', label: 'Plaque d’immatriculation personnalisée', short: 'Plaque personnalisée', price: 100 },
+    { id: 'poteau', label: 'Poteau + tapis rouge', short: 'Poteau + tapis rouge', price: 120 }
+  ];
+  const optById = Object.fromEntries(OPTIONS.map(o => [o.id, o]));
+  const NBSP = String.fromCharCode(160);
+  const eur = n => n + ' €';                    // message, e-mail
+  const eurU = n => n + NBSP + '€';              // interface (espace insécable)
+  const hoursLabel = id => id.replace('h', ' h');
+
   /* ==========================================================================
      État & persistance
      ========================================================================== */
@@ -142,10 +158,11 @@
 
   const DEFAULTS = () => ({
     occasion: '', mode: 'single', start: '', end: '', time: '', trip: [newPoint()],
-    vehicles: [], name: '', email: '', phone: '', message: '', edited: false
+    vehicles: [], forfait: '', forfaitAutre: '', options: [],
+    name: '', email: '', phone: '', message: '', edited: false
   });
   const state = DEFAULTS();
-  const CHOICE_KEYS = ['occasion', 'trip', 'mode', 'start', 'end', 'time', 'vehicles'];
+  const CHOICE_KEYS = ['occasion', 'trip', 'mode', 'start', 'end', 'time', 'vehicles', 'forfait', 'forfaitAutre', 'options'];
 
   function restore() {
     const s = storage.get();
@@ -163,6 +180,10 @@
     }
     if (typeof s.time === 'string' && TIME_RE.test(s.time)) state.time = s.time;
     if (Array.isArray(s.vehicles)) state.vehicles = s.vehicles.filter((id, i, a) => vehicles[id] && a.indexOf(id) === i);
+    // Forfait et options : champs absents des anciens états = valeurs vides.
+    if (FORFAITS.includes(s.forfait) || s.forfait === 'autre') state.forfait = s.forfait;
+    state.forfaitAutre = str(s.forfaitAutre, 60);
+    if (Array.isArray(s.options)) state.options = OPTIONS.map(o => o.id).filter(id => s.options.includes(id));
     state.name = str(s.name, 100);
     state.email = str(s.email, 120);
     state.phone = str(s.phone, 30);
@@ -185,6 +206,21 @@
   const stopLine = (pt, n) => `Étape ${n}${pt.time ? ' (' + timeLabel(pt.time) + ')' : ''} : ${pt.addr.trim()}`;
   const stopLines = () => state.trip.slice(1).filter(pt => pt.addr.trim()).map((pt, k) => stopLine(pt, k + 2));
 
+  /* Forfait : « 7 h », la durée libre saisie, ou « autre durée » tant qu'elle n'est pas précisée */
+  const forfaitText = () => (FORFAITS.includes(state.forfait) ? hoursLabel(state.forfait)
+    : state.forfait === 'autre' ? (state.forfaitAutre.trim() || 'autre durée') : '');
+  const forfaitDetail = () => { const t = forfaitText(); return t && state.forfait === 'autre' && !state.forfaitAutre.trim() ? t + ' (à préciser)' : t; };
+  const chosenOptions = () => state.options.map(id => optById[id]).filter(Boolean);
+  const optionsTotal = () => chosenOptions().reduce((t, o) => t + o.price, 0);
+  const lcFirst = t => t.charAt(0).toLowerCase() + t.slice(1);
+  const optionItems = () => chosenOptions().map(o => lcFirst(o.label) + ' (' + eur(o.price) + ')').join(', ');
+  const optionList = () => chosenOptions().map(o => o.label + ' (' + eur(o.price) + ')').join(', ');
+  const optionsLine = () => {
+    const n = state.options.length;
+    if (!chosenOptions().length) return '';
+    return n > 1 ? 'Options : ' + optionItems() + ' — total options ' + eur(optionsTotal()) + '.' : 'Option : ' + optionItems() + '.';
+  };
+
   function buildMessage() {
     let s = 'Bonjour, je souhaite une demande de devis pour ' + (OCC[state.occasion] ? OCC[state.occasion].phrase : 'une location de voiture de luxe');
     const d = dateClause();
@@ -196,6 +232,10 @@
     stopLines().forEach(l => lines.push(l + '.'));
     const cars = state.vehicles.map(id => 'la ' + vehicles[id].full);
     lines.push(cars.length ? `${cars.length > 1 ? 'Véhicules souhaités' : 'Véhicule souhaité'} : ${joinList(cars)}, avec chauffeur.` : 'Prestation avec chauffeur.');
+    const fo = forfaitDetail();
+    if (fo) lines.push('Forfait souhaité : ' + fo + '.');
+    const op = optionsLine();
+    if (op) lines.push(op);
     return lines.join('\n');
   }
   function joinList(list) {
@@ -513,6 +553,7 @@
   const f = {
     time: $('#f-time'), name: $('#f-name'),
     phone: $('#f-phone'), email: $('#f-email'), message: $('#f-message'),
+    forfaitAutre: $('#f-forfait-autre'),
     website: form.elements.website
   };
   const regenBtn = $('[data-regen]', form);
@@ -544,6 +585,25 @@
       <span class="tile__txt"><span class="tile__brand">${esc(v.brand)}</span><span class="tile__name">${esc(v.model)}</span></span>
     </label></li>`;
   }).join('');
+
+  /* Étape Forfait et options : cartes rendues d'après le catalogue (une seule source des prix) */
+  const forfaitsEl = $('[data-forfaits]');
+  const optionsEl = $('[data-options]');
+  const forfaitOtherEl = $('[data-forfait-other]');
+  const forfaitClearBtn = $('[data-forfait-clear]');
+  const optSumEl = $('[data-opt-sum]');
+  forfaitsEl.innerHTML = FORFAITS.map(id => {
+    const h = parseInt(id, 10);
+    return '<label class="hrs__item"><input type="radio" name="forfait" value="' + id + '">' +
+      '<span class="hrs__box"><span class="hrs__n" aria-hidden="true">' + h + '</span><span class="hrs__u" aria-hidden="true">heures</span><span class="vh">' + h + ' heures</span></span></label>';
+  }).join('') +
+    '<label class="hrs__item hrs__item--wide"><input type="radio" name="forfait" value="autre">' +
+    '<span class="hrs__box hrs__box--wide"><svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg><span class="hrs__t">Autre durée</span><span class="hrs__s">à préciser</span></span></label>';
+  optionsEl.innerHTML = OPTIONS.map(o =>
+    '<li><label class="ocard" data-opt="' + o.id + '"><input type="checkbox" name="option" value="' + o.id + '">' +
+    '<span class="ocard__check" aria-hidden="true"><svg class="ico"><use href="#i-check"/></svg></span>' +
+    '<span class="ocard__name">' + esc(o.label) + '</span><span class="ocard__price">' + eurU(o.price) + '</span></label></li>'
+  ).join('');
 
   /* ==========================================================================
      Calendrier
@@ -1009,6 +1069,12 @@
     $('[data-r="vehicles"]', recapEl).innerHTML = state.vehicles.length
       ? state.vehicles.map(id => `<li><span>${esc(vehicles[id].full)}</span><button type="button" class="recap__x" data-remove="${id}" aria-label="Retirer ${esc(vehicles[id].full)} de ma demande"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button></li>`).join('')
       : '<li class="is-empty">Sélectionnez un ou plusieurs véhicules</li>';
+    const opts = chosenOptions(), n = opts.length;
+    setR('forfait', forfaitText(), 'À définir');
+    setR('options', n ? n + ' option' + (n > 1 ? 's' : '') + ' · ' + eurU(optionsTotal()) : '', 'Aucune');
+    const names = $('[data-r="optnames"]', recapEl), list = opts.map(o => o.short).join(' · ');
+    names.hidden = !n;
+    if (names.textContent !== list) names.textContent = list;
   }
 
   function renderCounts() {
@@ -1040,6 +1106,8 @@
     const pts = filledPts();
     if (pts.length) items.push([3, 'i-pin', placeOf(pts[0]) + (pts.length > 1 ? ` · ${pts.length} adresses` : '')]);
     if (state.vehicles.length) items.push([4, 'i-wheel', state.vehicles.length === 1 ? vehicles[state.vehicles[0]].full : `${state.vehicles.length} véhicules`]);
+    const extra = [state.forfait ? forfaitText() : '', state.options.length ? state.options.length + (state.options.length > 1 ? ' options' : ' option') : ''].filter(Boolean);
+    if (extra.length) items.push([5, 'i-clock', extra.join(' · ')]);
     $('[data-mini-recap]', form).innerHTML = items.map(([s, ico, text]) =>
       `<button type="button" class="mini" data-goto-step="${s}"><svg class="ico" aria-hidden="true"><use href="#${ico}"/></svg>${esc(text)}</button>`
     ).join('');
@@ -1061,11 +1129,35 @@
     whatsappLinks.forEach(a => { a.href = CONTACT.wa + (text ? `?text=${encodeURIComponent(text)}` : ''); });
   }
 
+  /* Sous-total des options (zone aria-live) et état des cartes Forfait / Options */
+  let sumKey = '';
+  function renderExtras() {
+    $$('input[name="forfait"]', form).forEach(i => { i.checked = i.value === state.forfait; });
+    $$('.ocard', optionsEl).forEach(c => {
+      const on = state.options.includes(c.dataset.opt);
+      c.classList.toggle('is-on', on);
+      $('input', c).checked = on;
+    });
+    forfaitOtherEl.hidden = state.forfait !== 'autre';
+    setVal(f.forfaitAutre, state.forfaitAutre);
+    forfaitClearBtn.hidden = !state.forfait;
+    const n = chosenOptions().length, total = optionsTotal(), key = n + ':' + total;
+    if (key === sumKey) return;
+    sumKey = key;
+    optSumEl.innerHTML = n
+      ? '<p class="optsum__row"><span class="optsum__k">Options sélectionnées<span class="vh"> :</span></span><span class="optsum__v">' + eurU(total) + '</span></p>' +
+        '<p class="optsum__n">hors forfait et véhicule, sur devis</p>'
+      : '<p class="optsum__none">Aucune option sélectionnée</p>';
+    const v = $('.optsum__v', optSumEl);
+    if (v && inBooking) v.classList.add('fp-in');
+  }
+
   const stepDone = n => (n === 1 ? !!state.occasion
     : n === 2 ? !!state.start
       : n === 3 ? !!state.trip[0].addr.trim()
         : n === 4 ? state.vehicles.length > 0
-          : !!(state.name.trim() && state.email.trim() && state.phone.trim()));
+          : n === 5 ? !!(FORFAITS.includes(state.forfait) || (state.forfait === 'autre' && state.forfaitAutre.trim()) || state.options.length)
+            : !!(state.name.trim() && state.email.trim() && state.phone.trim()));
 
   function renderStepper() {
     stepBtns.forEach(b => {
@@ -1083,6 +1175,7 @@
     if (has('trip') && !keepTrip) renderTrip();
     renderTripWhen();
     renderFields();
+    renderExtras();
     renderRecap();
     renderMini();
     renderStepper();
@@ -1126,7 +1219,7 @@
     }
   }
 
-  const firstIncompleteBeforeSend = () => (!state.occasion ? 1 : !state.start ? 2 : !state.trip[0].addr.trim() ? 3 : 5);
+  const firstIncompleteBeforeSend = () => (!state.occasion ? 1 : !state.start ? 2 : !state.trip[0].addr.trim() ? 3 : 6);
 
   /* ==========================================================================
      Validation & envoi
@@ -1180,7 +1273,10 @@
       etapes: stopLines().join('\n'),
       date: state.start ? (state.end ? `Du ${rangeText(state.start, state.end)}` : longDate(state.start)) : '',
       heure: state.time ? timeLabel(state.time) : '',
-      vehicules: state.vehicles.map(id => vehicles[id].full).join(', ')
+      vehicules: state.vehicles.map(id => vehicles[id].full).join(', '),
+      forfait: forfaitDetail(),
+      options: optionList(),
+      totalOptions: chosenOptions().length ? eur(optionsTotal()) : ''
     };
   }
 
@@ -1195,6 +1291,8 @@
     if (d.priseEnCharge) lines.push(`Prise en charge : ${d.priseEnCharge}`);
     if (d.etapes) d.etapes.split('\n').forEach(l => lines.push(l));
     if (d.vehicules) lines.push(`Véhicules : ${d.vehicules}`);
+    if (d.forfait) lines.push(`Forfait : ${d.forfait}`);
+    if (d.options) lines.push(`Options : ${d.options}`, `Total options : ${d.totalOptions}`);
     return lines.join('\r\n');
   }
   const mailtoUrl = d => `mailto:${CONTACT.email}?subject=${encodeURIComponent(mailSubject(d))}&body=${encodeURIComponent(mailBody(d))}`;
@@ -1266,7 +1364,10 @@
       heure_prise_en_charge: d.heure,
       prise_en_charge: d.priseEnCharge,
       etapes: d.etapes,
-      vehicules: d.vehicules
+      vehicules: d.vehicules,
+      forfait: d.forfait,
+      options: d.options,
+      total_options: d.totalOptions
     };
     setLoading(true);
     const ctl = new AbortController();
@@ -1401,7 +1502,9 @@
       const id = lb.id;
       closeOverlay(lb.el, { restore: false });
       if (!state.vehicles.includes(id)) toggleVehicle(id, true);
-      goStep(firstIncompleteBeforeSend(), { scroll: true });
+      // Étapes obligatoires d'abord ; sinon le forfait s'il n'est pas encore choisi, puis les coordonnées
+      const s = firstIncompleteBeforeSend();
+      goStep(s === 6 && !state.forfait ? 5 : s, { scroll: true });
       return;
     }
 
@@ -1439,6 +1542,14 @@
 
     if (hit('[data-recap-open]')) { openRecap(); return; }
     if (hit('[data-recap-close]') || hit('[data-recap-backdrop]')) { closeOverlay(recapEl); return; }
+
+    if (hit('[data-forfait-clear]')) {
+      update({ forfait: '', forfaitAutre: '' });
+      const first = $('input[name="forfait"]', form);
+      if (first) first.focus();
+      announce('Forfait effacé.');
+      return;
+    }
 
     if (hit('[data-clear]')) {
       resetState(true);
@@ -1492,7 +1603,7 @@
   /* Saisies des champs */
   /* On relit tous les champs texte à chaque saisie : l'autoremplissage du navigateur
      modifie plusieurs champs d'un coup, aucun ne doit être écrasé par l'état. */
-  const TEXT_FIELDS = { name: f.name, phone: f.phone, email: f.email };
+  const TEXT_FIELDS = { name: f.name, phone: f.phone, email: f.email, forfaitAutre: f.forfaitAutre };
   form.addEventListener('input', e => {
     if (e.target.matches('[data-trip-addr]')) { onTripInput(e.target); return; }
     const patch = {};
@@ -1511,6 +1622,8 @@
     else if (t === f.time) update({ time: t.value });
     else if (t.matches('[data-trip-time]')) setPoint(Number(t.dataset.tripTime), { time: t.value });
     else if (t.name === 'vehicule') toggleVehicle(t.value, t.checked);
+    else if (t.name === 'forfait') update({ forfait: t.value });
+    else if (t.name === 'option') update({ options: OPTIONS.map(o => o.id).filter(id => (id === t.value ? t.checked : state.options.includes(id))) });
   });
 
   /* ==========================================================================
