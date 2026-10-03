@@ -2410,11 +2410,11 @@ html.is-splash .splash {
 }
 
 /* ==========================================================================
-   17. Mobile plus lumineux — sections ivoire, touches de noir conservées
+   17. Thème clair (mobile et bureau) — sections ivoire, touches de noir conservées
    (hero vidéo, réservation, pied de page restent sombres ; les cartes photo
    des marques et de la flotte restent noires sur le fond ivoire)
    ========================================================================== */
-@media (max-width: 899.98px) {
+@media all {
   .brands, .fleet, .zone, .contact {
     --ink: #f4efe6;
     --coal: #ede6d9;
@@ -2465,11 +2465,11 @@ html.is-splash .splash {
 }
 
 /* ==========================================================================
-   18. Mobile encore plus clair — réservation, cartes véhicules, en-tête,
+   18. Thème clair, suite — réservation, cartes véhicules, en-tête,
    barre d'action et pied de page passent en ivoire. Restent sombres : le hero
    vidéo et les cartes photo des marques.
    ========================================================================== */
-@media (max-width: 899.98px) {
+@media all {
   .booking, .footer, .cta-bar, .site-header.is-scrolled, .vcard {
     --ink: #f4efe6;
     --coal: #ede6d9;
@@ -2518,7 +2518,7 @@ html.is-splash .splash {
   /* pied de page */
   .footer { background: #ebe4d6; border-top-color: rgba(122, 95, 39, .25); }
 }
-@media (max-width: 899.98px) {
+@media all {
   /* éléments à fond sombre semi-transparent codé en dur → versions claires */
   .booking .btn--ghost, .footer .btn--ghost, .cta-bar .btn--ghost,
   .booking .icon-btn, .site-header.is-scrolled .icon-btn { background: transparent; }
@@ -2535,7 +2535,7 @@ html.is-splash .splash {
   .tray { background: rgba(244, 239, 230, .96); border-color: rgba(122, 95, 39, .22); --ivory: #1a1712; --ivory-dim: rgba(26, 23, 18, .78); --ivory-mute: rgba(26, 23, 18, .6); color: #1a1712; }
   .tray .btn--gold { color: #0a0a0b; }
 }
-@media (max-width: 899.98px) {
+@media all {
   .menu {
     --ink: #f4efe6;
     --ivory: #1a1712;
@@ -2553,4 +2553,88 @@ html.is-splash .splash {
   }
   .menu .btn--gold { color: #0a0a0b; }
   .menu .icon-btn, .menu .burger { background: transparent; }
+}
+
+/* ==========================================================================
+   19. Véhicules phares (Rolls-Royce Ghost, Classe S Maybach) et mentions
+   ========================================================================== */
+.vcard__tag, .brand__tag {
+  align-self: flex-start;
+  display: inline-flex; align-items: center; gap: .45rem;
+  margin-bottom: .55rem;
+  padding: .42rem .75rem .38rem;
+  border-radius: 999px;
+  background: var(--gold-grad);
+  font: 500 .58rem/1 var(--sans);
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: #15110a;
+}
+.vcard__tag::before, .brand__tag::before { content: "✦"; font-size: .7rem; letter-spacing: 0; }
+.vcard--feature {
+  border-color: rgba(201, 164, 92, .75);
+  box-shadow: 0 0 0 1px rgba(201, 164, 92, .35), 0 34px 70px -34px rgba(122, 95, 39, .65);
+}
+.vcard--feature .vcard__media::before {
+  content: "";
+  position: absolute; inset: 0; z-index: 1;
+  border-bottom: 1px solid rgba(201, 164, 92, .7);
+  pointer-events: none;
+}
+.vcard__name em { font-style: italic; font-weight: 400; color: var(--gold); white-space: nowrap; }
+.brand--feature::before { filter: saturate(1) brightness(1); }
+.brand--feature { box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .7); }
+.brand__models strong { font-weight: 500; color: #e8d29a; }
+@media (min-width: 900px) {
+  .vcard--feature .vcard__media { aspect-ratio: 16 / 10; }
+}
+
+/* ==========================================================================
+   20. Bouton réseaux flottant (mobile) : WhatsApp + Instagram
+   ========================================================================== */
+.social-fab { display: none; }
+@media (max-width: 899.98px) {
+  .social-fab {
+    position: fixed;
+    right: 16px;
+    bottom: calc(86px + env(safe-area-inset-bottom));
+    z-index: 76;
+    display: flex; flex-direction: column-reverse; align-items: center; gap: .65rem;
+    transition: bottom .55s var(--ease-out);
+  }
+  body:has(.cta-bar.is-hidden) .social-fab { bottom: calc(18px + env(safe-area-inset-bottom)); }
+  .social-fab__toggle {
+    position: relative;
+    display: grid; place-items: center;
+    width: 58px; height: 58px;
+    padding: 0;
+    border: 1px solid rgba(201, 164, 92, .8);
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 35%, #1d1a14, #0a0a0b 70%);
+    box-shadow: 0 14px 30px -10px rgba(10, 10, 11, .55), 0 0 0 4px rgba(244, 239, 230, .65);
+    cursor: pointer;
+    transition: transform .4s var(--ease-out);
+  }
+  .social-fab__toggle img { width: 44px; height: auto; transition: opacity .3s, transform .4s var(--ease-out); }
+  .social-fab__toggle .ico { position: absolute; font-size: 1.2rem; color: #e8d29a; opacity: 0; transform: rotate(-90deg); transition: opacity .3s, transform .4s var(--ease-out); }
+  .social-fab.is-open .social-fab__toggle img { opacity: 0; transform: scale(.6); }
+  .social-fab.is-open .social-fab__toggle .ico { opacity: 1; transform: none; }
+  .social-fab__link {
+    display: grid; place-items: center;
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    color: #fff;
+    box-shadow: 0 12px 26px -10px rgba(10, 10, 11, .5);
+    opacity: 0; visibility: hidden;
+    transform: translateY(14px) scale(.7);
+    transition: opacity .35s var(--ease), transform .45s var(--ease-out), visibility 0s .45s;
+  }
+  .social-fab__link svg { width: 24px; height: 24px; }
+  .social-fab__link--wa { background: #25d366; }
+  .social-fab__link--ig { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285aeb 90%); }
+  .social-fab.is-open .social-fab__link { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+  .social-fab.is-open .social-fab__link--ig { transition-delay: .06s; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .social-fab__link, .social-fab__toggle img, .social-fab__toggle .ico { transition: none; }
 }

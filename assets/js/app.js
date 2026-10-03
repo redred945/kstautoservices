@@ -1635,5 +1635,22 @@
   goStep(1, { focus: false });
   trayEl.hidden = false;
   $$('[data-year]').forEach(el => { el.textContent = String(new Date().getFullYear()); });
+
+  /* Bouton réseaux flottant (mobile) : le logo déploie WhatsApp et Instagram */
+  (function socialFab() {
+    const fab = $('[data-social]');
+    if (!fab) return;
+    const toggle = $('[data-social-toggle]', fab);
+    const links = $$('.social-fab__link', fab);
+    const set = open => {
+      fab.classList.toggle('is-open', open);
+      toggle.setAttribute('aria-expanded', String(open));
+      links.forEach(a => { a.tabIndex = open ? 0 : -1; });
+    };
+    toggle.addEventListener('click', () => set(!fab.classList.contains('is-open')));
+    document.addEventListener('click', e => { if (!fab.contains(e.target)) set(false); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && fab.classList.contains('is-open')) { set(false); toggle.focus(); } });
+  })();
+
   window.__kstReady = true;
 })();

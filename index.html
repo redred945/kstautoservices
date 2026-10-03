@@ -41,7 +41,7 @@
       }
     } catch (e) {}
   </script>
-  <link rel="stylesheet" href="assets/css/style.css?v=202610031737">
+  <link rel="stylesheet" href="assets/css/style.css?v=202610031746">
   <script>
     /* Les révélations au scroll ne s'activent que si app.js s'exécute ; sinon tout reste visible. */
     document.documentElement.classList.add('js');
@@ -251,9 +251,9 @@
 
       <div class="container hero__foot">
         <ul class="hero__brands" aria-label="Marques proposées">
-          <li>Mercedes</li>
-          <li>Porsche</li>
           <li>Rolls-Royce</li>
+          <li>Mercedes-Maybach</li>
+          <li>Porsche</li>
           <li>Maserati</li>
         </ul>
         <button class="hero__film" type="button" data-cinema-open aria-haspopup="dialog">
@@ -274,28 +274,30 @@
         </header>
 
         <ul class="brands__grid">
-          <li class="brand" data-reveal style="--bg:url(../img/mercedes/classe-g/classe-g-1.webp);--bp:50% 45%">
+          <li class="brand brand--feature" data-reveal style="--bg:url(../img/rolls-royce/ghost/image0.webp);--bp:38% 50%">
             <p class="brand__idx" aria-hidden="true">I</p>
-            <h3 class="brand__name">Mercedes</h3>
-            <p class="brand__count">4 véhicules</p>
-            <p class="brand__models">GLE Coupé AMG · Classe C · Classe G 6.3 AMG · Classe S Maybach</p>
-            <p class="brand__text">Un mariage en Mercedes : le luxe raffiné et le confort exceptionnel, symboles d'une union où chaque instant est une promesse d'élégance.</p>
-            <a class="link-arrow" href="#flotte" data-filter-brand="mercedes">Voir les véhicules <svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-          </li>
-          <li class="brand" data-reveal style="--bg:url(../img/porsche/image5.webp);--bp:42% 50%;--d:80ms">
-            <p class="brand__idx" aria-hidden="true">II</p>
-            <h3 class="brand__name">Porsche</h3>
-            <p class="brand__count">1 véhicule</p>
-            <p class="brand__models">Cayenne Coupé</p>
-            <a class="link-arrow" href="#flotte" data-filter-brand="porsche">Voir le véhicule <svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-          </li>
-          <li class="brand" data-reveal style="--bg:url(../img/rolls-royce/ghost/image0.webp);--bp:38% 50%;--d:160ms">
-            <p class="brand__idx" aria-hidden="true">III</p>
+            <p class="brand__tag">Signature</p>
             <h3 class="brand__name">Rolls-Royce</h3>
             <p class="brand__count">1 véhicule</p>
             <p class="brand__models">Ghost</p>
             <p class="brand__text">Un mariage en Rolls Royce Ghost : une célébration d'amour enveloppée dans le luxe intemporel, une promenade vers l'avenir avec élégance et grâce.</p>
             <a class="link-arrow" href="#flotte" data-filter-brand="rolls-royce">Voir le véhicule <svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          </li>
+          <li class="brand brand--feature" data-reveal style="--bg:url(../img/mercedes/classe-g/classe-g-1.webp);--bp:50% 45%;--d:80ms">
+            <p class="brand__idx" aria-hidden="true">II</p>
+            <p class="brand__tag">Maybach &amp; Classe G authentiques</p>
+            <h3 class="brand__name">Mercedes</h3>
+            <p class="brand__count">4 véhicules</p>
+            <p class="brand__models"><strong>Classe S Maybach authentique</strong> · <strong>Classe G 6.3 AMG authentique</strong> · GLE Coupé AMG · Classe C</p>
+            <p class="brand__text">Un mariage en Mercedes : le luxe raffiné et le confort exceptionnel, symboles d'une union où chaque instant est une promesse d'élégance.</p>
+            <a class="link-arrow" href="#flotte" data-filter-brand="mercedes">Voir les véhicules <svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          </li>
+          <li class="brand" data-reveal style="--bg:url(../img/porsche/image5.webp);--bp:42% 50%;--d:160ms">
+            <p class="brand__idx" aria-hidden="true">III</p>
+            <h3 class="brand__name">Porsche</h3>
+            <p class="brand__count">1 véhicule</p>
+            <p class="brand__models">Cayenne Coupé</p>
+            <a class="link-arrow" href="#flotte" data-filter-brand="porsche">Voir le véhicule <svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></a>
           </li>
           <li class="brand" data-reveal style="--bg:url(../img/maserati/ghbli/image2.webp);--bp:40% 50%;--d:240ms">
             <p class="brand__idx" aria-hidden="true">IV</p>
@@ -381,67 +383,34 @@
 
         <div class="filters" role="group" aria-label="Filtrer la flotte par marque" data-reveal>
           <button type="button" class="filter is-active" data-filter="all" aria-pressed="true">Toutes <span>7</span></button>
+          <button type="button" class="filter" data-filter="rolls-royce" aria-pressed="false">Rolls-Royce <span>1</span></button>
           <button type="button" class="filter" data-filter="mercedes" aria-pressed="false">Mercedes <span>4</span></button>
           <button type="button" class="filter" data-filter="porsche" aria-pressed="false">Porsche <span>1</span></button>
-          <button type="button" class="filter" data-filter="rolls-royce" aria-pressed="false">Rolls-Royce <span>1</span></button>
           <button type="button" class="filter" data-filter="maserati" aria-pressed="false">Maserati <span>1</span></button>
         </div>
         <p class="vh" role="status" data-filter-status></p>
 
         <div class="fleet__grid" data-fleet>
 
-          <!-- 01 Mercedes GLE Coupé AMG -->
-          <article class="vcard" data-vehicle="gle" data-brand="mercedes" style="--pos:56% 50%">
+          <!-- 01 Rolls-Royce Ghost -->
+          <article class="vcard vcard--feature" data-vehicle="ghost" data-brand="rolls-royce" style="--pos:50% 76%">
             <script type="application/json" data-vehicle-json>
-            {"id":"gle","brand":"Mercedes","brandKey":"mercedes","model":"GLE Coupé AMG","full":"Mercedes GLE Coupé AMG","type":"SUV","pos":"56% 50%","images":[
-              {"src":"assets/img/mercedes/gle/gle-coupe-amg.webp","w":1800,"h":795,"alt":"Mercedes GLE Coupé AMG blanc décoré de fleurs rouges et blanches, vue avant trois-quarts"},
-              {"src":"assets/img/mercedes/gle/image6.webp","w":1800,"h":1350,"alt":"Mercedes GLE Coupé AMG blanc avec un bouquet de roses roses et blanches sur le capot, vue avant"},
-              {"src":"assets/img/mercedes/gle/image7.webp","w":1800,"h":1350,"alt":"Intérieur cuir noir du Mercedes GLE Coupé AMG : banquette arrière et accoudoir central"},
-              {"src":"assets/img/mercedes/gle/image8.webp","w":1800,"h":1350,"alt":"Mercedes GLE Coupé AMG blanc, vue arrière trois-quarts"}]}
+            {"id":"ghost","brand":"Rolls-Royce","brandKey":"rolls-royce","model":"Ghost","full":"Rolls-Royce Ghost","type":"Berline","pos":"50% 76%","images":[
+              {"src":"assets/img/rolls-royce/ghost/image0.webp","w":1800,"h":1201,"alt":"Rolls-Royce Ghost blanche, vue avant sur une route de campagne"},
+              {"src":"assets/img/rolls-royce/ghost/image-2.webp","w":1800,"h":1201,"alt":"Rolls-Royce Ghost blanche, vue arrière"},
+              {"src":"assets/img/rolls-royce/ghost/image1.webp","w":1800,"h":1200,"alt":"Intérieur de la Rolls-Royce Ghost : banquette arrière en cuir rouge, bouteille de champagne et deux flûtes"}]}
             </script>
             <div class="vcard__media" data-open-gallery>
-              <img class="vcard__img" src="assets/img/mercedes/gle/gle-coupe-amg.webp" alt="Mercedes GLE Coupé AMG blanc décoré de fleurs rouges et blanches, vue avant trois-quarts" width="1800" height="795" loading="lazy" decoding="async">
-              <img class="vcard__img vcard__img--alt" src="assets/img/mercedes/gle/image6.webp" alt="" aria-hidden="true" width="1800" height="1350" loading="lazy" decoding="async">
+              <img class="vcard__img" src="assets/img/rolls-royce/ghost/image0.webp" alt="Rolls-Royce Ghost blanche, vue avant sur une route de campagne" width="1800" height="1201" loading="lazy" decoding="async">
+              <img class="vcard__img vcard__img--alt" src="assets/img/rolls-royce/ghost/image1.webp" alt="" aria-hidden="true" width="1800" height="1200" loading="lazy" decoding="async">
               <span class="vcard__num" aria-hidden="true">01</span>
               <span class="vcard__badge" aria-hidden="true"><svg class="ico"><use href="#i-check"/></svg>Dans ma demande</span>
-              <span class="vcard__photos" aria-hidden="true">4 photos</span>
+              <span class="vcard__photos" aria-hidden="true">3 photos</span>
             </div>
             <div class="vcard__body">
-              <p class="vcard__brand">Mercedes</p>
-              <h3 class="vcard__name"><span class="vh">Mercedes </span>GLE Coupé AMG</h3>
-              <ul class="chips">
-                <li>SUV</li>
-                <li><svg class="ico" aria-hidden="true"><use href="#i-seat"/></svg>5 places</li>
-                <li><svg class="ico" aria-hidden="true"><use href="#i-bag"/></svg>1 bagage</li>
-                <li><svg class="ico" aria-hidden="true"><use href="#i-wheel"/></svg>Avec chauffeur</li>
-              </ul>
-              <p class="vcard__price">Tarif <span>Sur devis</span></p>
-              <div class="vcard__actions">
-                <button type="button" class="btn btn--gold" data-toggle-vehicle><span data-label>Ajouter à ma demande</span></button>
-                <button type="button" class="btn btn--ghost" data-open-gallery aria-label="Voir la galerie : Mercedes GLE Coupé AMG">Voir la galerie</button>
-              </div>
-            </div>
-          </article>
-
-          <!-- 02 Mercedes Classe C -->
-          <article class="vcard" data-vehicle="classe-c" data-brand="mercedes" style="--pos:50% 55%">
-            <script type="application/json" data-vehicle-json>
-            {"id":"classe-c","brand":"Mercedes","brandKey":"mercedes","model":"Classe C","full":"Mercedes Classe C","type":"Berline","pos":"50% 55%","images":[
-              {"src":"assets/img/mercedes/classe-c/classe-c.webp","w":1800,"h":795,"alt":"Mercedes Classe C blanche décorée d'un bouquet de fleurs rouges et blanches, vue avant au crépuscule"},
-              {"src":"assets/img/mercedes/classe-c/image3.webp","w":1800,"h":1350,"alt":"Mercedes Classe C blanche, vue avant trois-quarts devant un champ"},
-              {"src":"assets/img/mercedes/classe-c/image4.webp","w":1800,"h":1350,"alt":"Intérieur cuir noir de la Mercedes Classe C : banquette arrière et accoudoir central"},
-              {"src":"assets/img/mercedes/classe-c/image5.webp","w":1800,"h":1350,"alt":"Mercedes Classe C blanche, vue arrière trois-quarts"}]}
-            </script>
-            <div class="vcard__media" data-open-gallery>
-              <img class="vcard__img" src="assets/img/mercedes/classe-c/classe-c.webp" alt="Mercedes Classe C blanche décorée d'un bouquet de fleurs rouges et blanches, vue avant au crépuscule" width="1800" height="795" loading="lazy" decoding="async">
-              <img class="vcard__img vcard__img--alt" src="assets/img/mercedes/classe-c/image3.webp" alt="" aria-hidden="true" width="1800" height="1350" loading="lazy" decoding="async">
-              <span class="vcard__num" aria-hidden="true">02</span>
-              <span class="vcard__badge" aria-hidden="true"><svg class="ico"><use href="#i-check"/></svg>Dans ma demande</span>
-              <span class="vcard__photos" aria-hidden="true">4 photos</span>
-            </div>
-            <div class="vcard__body">
-              <p class="vcard__brand">Mercedes</p>
-              <h3 class="vcard__name"><span class="vh">Mercedes </span>Classe C</h3>
+              <p class="vcard__tag">Signature</p>
+              <p class="vcard__brand">Rolls-Royce</p>
+              <h3 class="vcard__name"><span class="vh">Rolls-Royce </span>Ghost</h3>
               <ul class="chips">
                 <li>Berline</li>
                 <li><svg class="ico" aria-hidden="true"><use href="#i-seat"/></svg>5 places</li>
@@ -451,7 +420,40 @@
               <p class="vcard__price">Tarif <span>Sur devis</span></p>
               <div class="vcard__actions">
                 <button type="button" class="btn btn--gold" data-toggle-vehicle><span data-label>Ajouter à ma demande</span></button>
-                <button type="button" class="btn btn--ghost" data-open-gallery aria-label="Voir la galerie : Mercedes Classe C">Voir la galerie</button>
+                <button type="button" class="btn btn--ghost" data-open-gallery aria-label="Voir la galerie : Rolls-Royce Ghost">Voir la galerie</button>
+              </div>
+            </div>
+          </article>
+
+          <!-- 02 Mercedes Classe S Maybach -->
+          <article class="vcard vcard--feature" data-vehicle="classe-s" data-brand="mercedes" style="--pos:42% 50%">
+            <script type="application/json" data-vehicle-json>
+            {"id":"classe-s","brand":"Mercedes","brandKey":"mercedes","model":"Classe S Maybach (Authentique)","full":"Mercedes Classe S Maybach (Authentique)","type":"","pos":"42% 50%","images":[
+              {"src":"assets/img/mercedes/classe-s/classe-s-1.webp","w":1800,"h":884,"alt":"Mercedes Classe S Maybach bicolore blanc et noir, un bouquet de fleurs blanches sur le capot, vue avant trois-quarts"},
+              {"src":"assets/img/mercedes/classe-s/classe-s-3.webp","w":1800,"h":1350,"alt":"Mercedes Classe S Maybach, vue arrière trois-quarts sur un chemin de gravier"},
+              {"src":"assets/img/mercedes/classe-s/classe-s-4.webp","w":1280,"h":565,"alt":"Mercedes Classe S Maybach blanc et noir, vue de côté, fleurs blanches sur le capot devant un escalier de pierre"},
+              {"src":"assets/img/mercedes/classe-s/classe-s-2.webp","w":1512,"h":1801,"alt":"Intérieur de la Mercedes Classe S Maybach : sièges arrière en cuir matelassé gris"}]}
+            </script>
+            <div class="vcard__media" data-open-gallery>
+              <img class="vcard__img" src="assets/img/mercedes/classe-s/classe-s-1.webp" alt="Mercedes Classe S Maybach bicolore blanc et noir, un bouquet de fleurs blanches sur le capot, vue avant trois-quarts" width="1800" height="884" loading="lazy" decoding="async">
+              <img class="vcard__img vcard__img--alt" src="assets/img/mercedes/classe-s/classe-s-4.webp" alt="" aria-hidden="true" width="1280" height="565" loading="lazy" decoding="async">
+              <span class="vcard__num" aria-hidden="true">02</span>
+              <span class="vcard__badge" aria-hidden="true"><svg class="ico"><use href="#i-check"/></svg>Dans ma demande</span>
+              <span class="vcard__photos" aria-hidden="true">4 photos</span>
+            </div>
+            <div class="vcard__body">
+              <p class="vcard__tag">Authentique Maybach</p>
+              <p class="vcard__brand">Mercedes</p>
+              <h3 class="vcard__name"><span class="vh">Mercedes </span>Classe S Maybach <em>Authentique</em></h3>
+              <ul class="chips">
+                <li><svg class="ico" aria-hidden="true"><use href="#i-seat"/></svg>5 places</li>
+                <li><svg class="ico" aria-hidden="true"><use href="#i-bag"/></svg>1 bagage</li>
+                <li><svg class="ico" aria-hidden="true"><use href="#i-wheel"/></svg>Avec chauffeur</li>
+              </ul>
+              <p class="vcard__price">Tarif <span>Sur devis</span></p>
+              <div class="vcard__actions">
+                <button type="button" class="btn btn--gold" data-toggle-vehicle><span data-label>Ajouter à ma demande</span></button>
+                <button type="button" class="btn btn--ghost" data-open-gallery aria-label="Voir la galerie : Mercedes Classe S Maybach (Authentique)">Voir la galerie</button>
               </div>
             </div>
           </article>
@@ -473,6 +475,7 @@
               <span class="vcard__photos" aria-hidden="true">4 photos</span>
             </div>
             <div class="vcard__body">
+              <p class="vcard__tag">Authentique</p>
               <p class="vcard__brand">Mercedes</p>
               <h3 class="vcard__name"><span class="vh">Mercedes </span>Classe G 6.3 AMG <em>Authentique</em></h3>
               <ul class="chips">
@@ -488,26 +491,27 @@
             </div>
           </article>
 
-          <!-- 04 Mercedes Classe S Maybach -->
-          <article class="vcard" data-vehicle="classe-s" data-brand="mercedes" style="--pos:42% 50%">
+          <!-- 04 Mercedes GLE Coupé AMG -->
+          <article class="vcard" data-vehicle="gle" data-brand="mercedes" style="--pos:56% 50%">
             <script type="application/json" data-vehicle-json>
-            {"id":"classe-s","brand":"Mercedes","brandKey":"mercedes","model":"Classe S Maybach","full":"Mercedes Classe S Maybach","type":"","pos":"42% 50%","images":[
-              {"src":"assets/img/mercedes/classe-s/classe-s-1.webp","w":1800,"h":884,"alt":"Mercedes Classe S Maybach bicolore blanc et noir, un bouquet de fleurs blanches sur le capot, vue avant trois-quarts"},
-              {"src":"assets/img/mercedes/classe-s/classe-s-3.webp","w":1800,"h":1350,"alt":"Mercedes Classe S Maybach, vue arrière trois-quarts sur un chemin de gravier"},
-              {"src":"assets/img/mercedes/classe-s/classe-s-4.webp","w":1280,"h":565,"alt":"Mercedes Classe S Maybach blanc et noir, vue de côté, fleurs blanches sur le capot devant un escalier de pierre"},
-              {"src":"assets/img/mercedes/classe-s/classe-s-2.webp","w":1512,"h":1801,"alt":"Intérieur de la Mercedes Classe S Maybach : sièges arrière en cuir matelassé gris"}]}
+            {"id":"gle","brand":"Mercedes","brandKey":"mercedes","model":"GLE Coupé AMG","full":"Mercedes GLE Coupé AMG","type":"SUV","pos":"56% 50%","images":[
+              {"src":"assets/img/mercedes/gle/gle-coupe-amg.webp","w":1800,"h":795,"alt":"Mercedes GLE Coupé AMG blanc décoré de fleurs rouges et blanches, vue avant trois-quarts"},
+              {"src":"assets/img/mercedes/gle/image6.webp","w":1800,"h":1350,"alt":"Mercedes GLE Coupé AMG blanc avec un bouquet de roses roses et blanches sur le capot, vue avant"},
+              {"src":"assets/img/mercedes/gle/image7.webp","w":1800,"h":1350,"alt":"Intérieur cuir noir du Mercedes GLE Coupé AMG : banquette arrière et accoudoir central"},
+              {"src":"assets/img/mercedes/gle/image8.webp","w":1800,"h":1350,"alt":"Mercedes GLE Coupé AMG blanc, vue arrière trois-quarts"}]}
             </script>
             <div class="vcard__media" data-open-gallery>
-              <img class="vcard__img" src="assets/img/mercedes/classe-s/classe-s-1.webp" alt="Mercedes Classe S Maybach bicolore blanc et noir, un bouquet de fleurs blanches sur le capot, vue avant trois-quarts" width="1800" height="884" loading="lazy" decoding="async">
-              <img class="vcard__img vcard__img--alt" src="assets/img/mercedes/classe-s/classe-s-4.webp" alt="" aria-hidden="true" width="1280" height="565" loading="lazy" decoding="async">
+              <img class="vcard__img" src="assets/img/mercedes/gle/gle-coupe-amg.webp" alt="Mercedes GLE Coupé AMG blanc décoré de fleurs rouges et blanches, vue avant trois-quarts" width="1800" height="795" loading="lazy" decoding="async">
+              <img class="vcard__img vcard__img--alt" src="assets/img/mercedes/gle/image6.webp" alt="" aria-hidden="true" width="1800" height="1350" loading="lazy" decoding="async">
               <span class="vcard__num" aria-hidden="true">04</span>
               <span class="vcard__badge" aria-hidden="true"><svg class="ico"><use href="#i-check"/></svg>Dans ma demande</span>
               <span class="vcard__photos" aria-hidden="true">4 photos</span>
             </div>
             <div class="vcard__body">
               <p class="vcard__brand">Mercedes</p>
-              <h3 class="vcard__name"><span class="vh">Mercedes </span>Classe S Maybach</h3>
+              <h3 class="vcard__name"><span class="vh">Mercedes </span>GLE Coupé AMG</h3>
               <ul class="chips">
+                <li>SUV</li>
                 <li><svg class="ico" aria-hidden="true"><use href="#i-seat"/></svg>5 places</li>
                 <li><svg class="ico" aria-hidden="true"><use href="#i-bag"/></svg>1 bagage</li>
                 <li><svg class="ico" aria-hidden="true"><use href="#i-wheel"/></svg>Avec chauffeur</li>
@@ -515,7 +519,7 @@
               <p class="vcard__price">Tarif <span>Sur devis</span></p>
               <div class="vcard__actions">
                 <button type="button" class="btn btn--gold" data-toggle-vehicle><span data-label>Ajouter à ma demande</span></button>
-                <button type="button" class="btn btn--ghost" data-open-gallery aria-label="Voir la galerie : Mercedes Classe S Maybach">Voir la galerie</button>
+                <button type="button" class="btn btn--ghost" data-open-gallery aria-label="Voir la galerie : Mercedes GLE Coupé AMG">Voir la galerie</button>
               </div>
             </div>
           </article>
@@ -553,39 +557,7 @@
             </div>
           </article>
 
-          <!-- 06 Rolls-Royce Ghost -->
-          <article class="vcard" data-vehicle="ghost" data-brand="rolls-royce" style="--pos:50% 76%">
-            <script type="application/json" data-vehicle-json>
-            {"id":"ghost","brand":"Rolls-Royce","brandKey":"rolls-royce","model":"Ghost","full":"Rolls-Royce Ghost","type":"Berline","pos":"50% 76%","images":[
-              {"src":"assets/img/rolls-royce/ghost/image0.webp","w":1800,"h":1201,"alt":"Rolls-Royce Ghost blanche, vue avant sur une route de campagne"},
-              {"src":"assets/img/rolls-royce/ghost/image-2.webp","w":1800,"h":1201,"alt":"Rolls-Royce Ghost blanche, vue arrière"},
-              {"src":"assets/img/rolls-royce/ghost/image1.webp","w":1800,"h":1200,"alt":"Intérieur de la Rolls-Royce Ghost : banquette arrière en cuir rouge, bouteille de champagne et deux flûtes"}]}
-            </script>
-            <div class="vcard__media" data-open-gallery>
-              <img class="vcard__img" src="assets/img/rolls-royce/ghost/image0.webp" alt="Rolls-Royce Ghost blanche, vue avant sur une route de campagne" width="1800" height="1201" loading="lazy" decoding="async">
-              <img class="vcard__img vcard__img--alt" src="assets/img/rolls-royce/ghost/image1.webp" alt="" aria-hidden="true" width="1800" height="1200" loading="lazy" decoding="async">
-              <span class="vcard__num" aria-hidden="true">06</span>
-              <span class="vcard__badge" aria-hidden="true"><svg class="ico"><use href="#i-check"/></svg>Dans ma demande</span>
-              <span class="vcard__photos" aria-hidden="true">3 photos</span>
-            </div>
-            <div class="vcard__body">
-              <p class="vcard__brand">Rolls-Royce</p>
-              <h3 class="vcard__name"><span class="vh">Rolls-Royce </span>Ghost</h3>
-              <ul class="chips">
-                <li>Berline</li>
-                <li><svg class="ico" aria-hidden="true"><use href="#i-seat"/></svg>5 places</li>
-                <li><svg class="ico" aria-hidden="true"><use href="#i-bag"/></svg>1 bagage</li>
-                <li><svg class="ico" aria-hidden="true"><use href="#i-wheel"/></svg>Avec chauffeur</li>
-              </ul>
-              <p class="vcard__price">Tarif <span>Sur devis</span></p>
-              <div class="vcard__actions">
-                <button type="button" class="btn btn--gold" data-toggle-vehicle><span data-label>Ajouter à ma demande</span></button>
-                <button type="button" class="btn btn--ghost" data-open-gallery aria-label="Voir la galerie : Rolls-Royce Ghost">Voir la galerie</button>
-              </div>
-            </div>
-          </article>
-
-          <!-- 07 Maserati Ghibli -->
+          <!-- 06 Maserati Ghibli -->
           <article class="vcard" data-vehicle="ghibli" data-brand="maserati" style="--pos:68% 50%">
             <script type="application/json" data-vehicle-json>
             {"id":"ghibli","brand":"Maserati","brandKey":"maserati","model":"Ghibli","full":"Maserati Ghibli","type":"Berline","pos":"68% 50%","images":[
@@ -597,7 +569,7 @@
             <div class="vcard__media" data-open-gallery>
               <img class="vcard__img" src="assets/img/maserati/ghbli/ghibli.webp" alt="Maserati Ghibli blanche décorée de fleurs rouges et blanches, vue avant trois-quarts sur une place" width="1800" height="795" loading="lazy" decoding="async">
               <img class="vcard__img vcard__img--alt" src="assets/img/maserati/ghbli/image0.webp" alt="" aria-hidden="true" width="1800" height="1350" loading="lazy" decoding="async">
-              <span class="vcard__num" aria-hidden="true">07</span>
+              <span class="vcard__num" aria-hidden="true">06</span>
               <span class="vcard__badge" aria-hidden="true"><svg class="ico"><use href="#i-check"/></svg>Dans ma demande</span>
               <span class="vcard__photos" aria-hidden="true">4 photos</span>
             </div>
@@ -614,6 +586,39 @@
               <div class="vcard__actions">
                 <button type="button" class="btn btn--gold" data-toggle-vehicle><span data-label>Ajouter à ma demande</span></button>
                 <button type="button" class="btn btn--ghost" data-open-gallery aria-label="Voir la galerie : Maserati Ghibli">Voir la galerie</button>
+              </div>
+            </div>
+          </article>
+
+          <!-- 07 Mercedes Classe C -->
+          <article class="vcard" data-vehicle="classe-c" data-brand="mercedes" style="--pos:50% 55%">
+            <script type="application/json" data-vehicle-json>
+            {"id":"classe-c","brand":"Mercedes","brandKey":"mercedes","model":"Classe C","full":"Mercedes Classe C","type":"Berline","pos":"50% 55%","images":[
+              {"src":"assets/img/mercedes/classe-c/classe-c.webp","w":1800,"h":795,"alt":"Mercedes Classe C blanche décorée d'un bouquet de fleurs rouges et blanches, vue avant au crépuscule"},
+              {"src":"assets/img/mercedes/classe-c/image3.webp","w":1800,"h":1350,"alt":"Mercedes Classe C blanche, vue avant trois-quarts devant un champ"},
+              {"src":"assets/img/mercedes/classe-c/image4.webp","w":1800,"h":1350,"alt":"Intérieur cuir noir de la Mercedes Classe C : banquette arrière et accoudoir central"},
+              {"src":"assets/img/mercedes/classe-c/image5.webp","w":1800,"h":1350,"alt":"Mercedes Classe C blanche, vue arrière trois-quarts"}]}
+            </script>
+            <div class="vcard__media" data-open-gallery>
+              <img class="vcard__img" src="assets/img/mercedes/classe-c/classe-c.webp" alt="Mercedes Classe C blanche décorée d'un bouquet de fleurs rouges et blanches, vue avant au crépuscule" width="1800" height="795" loading="lazy" decoding="async">
+              <img class="vcard__img vcard__img--alt" src="assets/img/mercedes/classe-c/image3.webp" alt="" aria-hidden="true" width="1800" height="1350" loading="lazy" decoding="async">
+              <span class="vcard__num" aria-hidden="true">07</span>
+              <span class="vcard__badge" aria-hidden="true"><svg class="ico"><use href="#i-check"/></svg>Dans ma demande</span>
+              <span class="vcard__photos" aria-hidden="true">4 photos</span>
+            </div>
+            <div class="vcard__body">
+              <p class="vcard__brand">Mercedes</p>
+              <h3 class="vcard__name"><span class="vh">Mercedes </span>Classe C</h3>
+              <ul class="chips">
+                <li>Berline</li>
+                <li><svg class="ico" aria-hidden="true"><use href="#i-seat"/></svg>5 places</li>
+                <li><svg class="ico" aria-hidden="true"><use href="#i-bag"/></svg>1 bagage</li>
+                <li><svg class="ico" aria-hidden="true"><use href="#i-wheel"/></svg>Avec chauffeur</li>
+              </ul>
+              <p class="vcard__price">Tarif <span>Sur devis</span></p>
+              <div class="vcard__actions">
+                <button type="button" class="btn btn--gold" data-toggle-vehicle><span data-label>Ajouter à ma demande</span></button>
+                <button type="button" class="btn btn--ghost" data-open-gallery aria-label="Voir la galerie : Mercedes Classe C">Voir la galerie</button>
               </div>
             </div>
           </article>
@@ -1022,6 +1027,22 @@
   </div>
 
   <!-- Barre d'action mobile -->
+  <!-- Réseaux (mobile) : le logo déploie WhatsApp et Instagram -->
+  <div class="social-fab" data-social>
+    <button type="button" class="social-fab__toggle" aria-expanded="false" aria-controls="social-links" aria-label="Nos réseaux : WhatsApp et Instagram" data-social-toggle>
+      <img src="assets/img/logo/logo-mini.webp" alt="" width="132" height="99">
+      <svg class="ico" aria-hidden="true"><use href="#i-close"/></svg>
+    </button>
+    <div class="social-fab__links" id="social-links" style="display:contents">
+      <a class="social-fab__link social-fab__link--wa" href="https://wa.me/33648480558" target="_blank" rel="noopener" aria-label="WhatsApp : 06 48 48 05 58" tabindex="-1">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91C21.95 6.45 17.5 2 12.04 2zm0 18.15c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24 4.54 0 8.24 3.7 8.24 8.24 0 4.55-3.7 8.24-8.24 8.24zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.13-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.35-.76-1.84-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.22.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.14-1.18-.06-.1-.22-.16-.47-.28z"/></svg>
+      </a>
+      <a class="social-fab__link social-fab__link--ig" href="https://www.instagram.com/kstautoloc/" target="_blank" rel="noopener" aria-label="Instagram : @kstautoloc" tabindex="-1">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg>
+      </a>
+    </div>
+  </div>
+
   <div class="cta-bar" data-cta-bar>
     <a class="btn btn--ghost" href="tel:+33648480558"><svg class="ico" aria-hidden="true"><use href="#i-phone"/></svg>Appeler</a>
     <a class="btn btn--gold" href="#reservation">Réserver <b class="badge" data-count hidden>0</b></a>
@@ -1064,6 +1085,6 @@
     <p class="noscript">Le formulaire de devis nécessite JavaScript. Appelez-nous au <a href="tel:+33648480558">06 48 48 05 58</a> ou écrivez à <a href="mailto:contact@kstautoservices.com">contact@kstautoservices.com</a>.</p>
   </noscript>
 
-  <script src="assets/js/app.js?v=202610031737" defer></script>
+  <script src="assets/js/app.js?v=202610031746" defer></script>
 </body>
 </html>
