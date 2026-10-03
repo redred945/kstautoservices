@@ -27,7 +27,7 @@
   const STORE_KEY = 'kst-demande-v1';
   const WEB3FORMS_URL = 'https://api.web3forms.com/submit';
   const VIDEO_SRC = 'assets/img/Home/video-presentation.mp4';
-  const BAN_URL = 'https://api-adresse.data.gouv.fr/search/';   // Base Adresse Nationale (gratuite, sans clé)
+  const BAN_URL = 'https://api-adresse.data.gouv.fr/search/';   // Base Adresse Nationale (gratuite, sans clé) ; lat/lon = priorité à l'Île-de-France
   const MAX_POINTS = 8;                                          // prise en charge + 7 étapes
   const STEPS = 5;
 
@@ -859,7 +859,7 @@
       ac.ctl = ctl;
       const kill = setTimeout(() => ctl.abort(), 6000);
       try {
-        const res = await fetch(`${BAN_URL}?q=${encodeURIComponent(q.slice(0, 200))}&limit=5&autocomplete=1`, { signal: ctl.signal });
+        const res = await fetch(`${BAN_URL}?q=${encodeURIComponent(q.slice(0, 200))}&limit=5&autocomplete=1&lat=48.8566&lon=2.3522`, { signal: ctl.signal });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
         found = (Array.isArray(json.features) ? json.features : [])

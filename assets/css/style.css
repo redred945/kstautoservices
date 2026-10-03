@@ -2463,3 +2463,94 @@ html.is-splash .splash {
   .swipe-track { background: rgba(26, 23, 18, .12); }
   .brand .swipe-track, .vcard .swipe-track { background: rgba(244, 239, 230, .14); }
 }
+
+/* ==========================================================================
+   18. Mobile encore plus clair — réservation, cartes véhicules, en-tête,
+   barre d'action et pied de page passent en ivoire. Restent sombres : le hero
+   vidéo et les cartes photo des marques.
+   ========================================================================== */
+@media (max-width: 899.98px) {
+  .booking, .footer, .cta-bar, .site-header.is-scrolled, .vcard {
+    --ink: #f4efe6;
+    --coal: #ede6d9;
+    --graphite: #fbf8f2;
+    --graphite-2: #f3ede2;
+    --ivory: #1a1712;
+    --ivory-2: #2b261d;
+    --ivory-dim: rgba(26, 23, 18, .78);
+    --ivory-mute: rgba(26, 23, 18, .6);
+    --gold: #7a5f27;
+    --gold-light: #5f4a1d;
+    --line: rgba(122, 95, 39, .26);
+    --line-strong: rgba(122, 95, 39, .55);
+    --line-soft: rgba(26, 23, 18, .11);
+    color: #1a1712;
+  }
+  .booking :focus-visible, .footer :focus-visible, .vcard :focus-visible { outline-color: #7a5f27; }
+  .booking .btn--gold, .footer .btn--gold, .cta-bar .btn--gold, .site-header .btn--gold, .vcard .btn--gold { color: #0a0a0b; }
+
+  /* réservation */
+  .booking {
+    background:
+      radial-gradient(70% 30% at 50% 0%, rgba(201, 164, 92, .14), transparent 70%),
+      #f4efe6;
+  }
+  .bcard { background: #fbf8f2; box-shadow: 0 30px 60px -40px rgba(26, 23, 18, .45); }
+  .booking .btn--ghost, .booking .btn--text { background: transparent; }
+  /* le faire-part garde son papier, posé sur un fond plus doux */
+  .recap.fp { box-shadow: 0 -20px 60px rgba(26, 23, 18, .25); }
+
+  /* cartes véhicules : carte claire, photo intacte */
+  .vcard { background: #fbf8f2; box-shadow: 0 24px 50px -30px rgba(26, 23, 18, .4); }
+  .vcard .btn--ghost { background: transparent; }
+
+  /* en-tête au défilement : verre ivoire */
+  .site-header.is-scrolled {
+    background: rgba(244, 239, 230, .9);
+    border-bottom-color: rgba(122, 95, 39, .22);
+  }
+
+  /* barre d'action fixe */
+  .cta-bar { background: rgba(244, 239, 230, .94); border-top-color: rgba(122, 95, 39, .22); }
+  .cta-bar .btn--ghost { background: transparent; }
+  .cta-bar .badge { background: #1a1712; color: #e8d29a; }
+
+  /* pied de page */
+  .footer { background: #ebe4d6; border-top-color: rgba(122, 95, 39, .25); }
+}
+@media (max-width: 899.98px) {
+  /* éléments à fond sombre semi-transparent codé en dur → versions claires */
+  .booking .btn--ghost, .footer .btn--ghost, .cta-bar .btn--ghost,
+  .booking .icon-btn, .site-header.is-scrolled .icon-btn { background: transparent; }
+  .site-header.is-scrolled .burger { background: transparent; border-color: rgba(122, 95, 39, .55); }
+  .site-header.is-scrolled .burger span { background: #1a1712; }
+  .booking .bcard__bar { background: rgba(251, 248, 242, .96); border-bottom: 1px solid rgba(122, 95, 39, .18); }
+  .booking .occ__box { background: #fff; box-shadow: 0 10px 24px -18px rgba(26, 23, 18, .4); }
+  .booking .field input, .booking .field select, .booking .field textarea { background: #fff; }
+  .booking .field input:focus, .booking .field select:focus, .booking .field textarea:focus { background: #fff; }
+  .booking .cal { background: #fff; }
+  .booking .tile__check { background: rgba(255, 255, 255, .9); }
+  .booking .combo__list { background: #fff; box-shadow: 0 18px 40px -20px rgba(26, 23, 18, .45); }
+  .booking .recap-toggle { background: #fff; }
+  .tray { background: rgba(244, 239, 230, .96); border-color: rgba(122, 95, 39, .22); --ivory: #1a1712; --ivory-dim: rgba(26, 23, 18, .78); --ivory-mute: rgba(26, 23, 18, .6); color: #1a1712; }
+  .tray .btn--gold { color: #0a0a0b; }
+}
+@media (max-width: 899.98px) {
+  .menu {
+    --ink: #f4efe6;
+    --ivory: #1a1712;
+    --ivory-dim: rgba(26, 23, 18, .78);
+    --ivory-mute: rgba(26, 23, 18, .6);
+    --gold: #7a5f27;
+    --gold-light: #5f4a1d;
+    --line: rgba(122, 95, 39, .26);
+    --line-strong: rgba(122, 95, 39, .55);
+    --line-soft: rgba(26, 23, 18, .11);
+    color: #1a1712;
+    background:
+      radial-gradient(70% 45% at 50% 0%, rgba(201, 164, 92, .18), transparent 70%),
+      #f4efe6;
+  }
+  .menu .btn--gold { color: #0a0a0b; }
+  .menu .icon-btn, .menu .burger { background: transparent; }
+}
