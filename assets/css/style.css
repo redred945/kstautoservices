@@ -2889,3 +2889,18 @@ html.is-splash .splash {
   .fp__edit { gap: 0; }
   .fp__edit button { padding: 0 .3rem; font-size: .54rem; letter-spacing: .12em; }
 }
+
+/* Distinctions mariages.net (pied de page) */
+.footer__labels {
+  display: flex; flex-direction: column; align-items: center; gap: 1.1rem;
+  margin-top: clamp(2.4rem, 5vw, 3.4rem);
+  padding-top: clamp(1.8rem, 4vw, 2.4rem);
+  border-top: 1px solid var(--line);
+  text-align: center;
+}
+.footer__labels .footer__h { margin: 0; }
+.footer__labels ul { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: clamp(1rem, 3vw, 2rem); }
+.footer__labels li { padding: 0; }
+.footer__labels a { display: block; border-radius: 4px; transition: transform .5s var(--ease-out), filter .5s var(--ease); }
+.footer__labels a:hover { transform: translateY(-3px); filter: drop-shadow(0 14px 22px rgba(26, 23, 18, .25)); }
+.footer__labels img { display: block; width: clamp(92px, 24vw, 132px); height: auto; filter: drop-shadow(0 8px 16px rgba(26, 23, 18, .14)); }

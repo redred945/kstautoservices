@@ -1,5 +1,5 @@
 /* ==========================================================================
-   KST AutoServices — app.js
+   KST Auto Loc’ — app.js
    JS vanille, sans dépendance.
 
    ENVOI DU FORMULAIRE
@@ -1281,7 +1281,7 @@
   }
 
   function mailSubject(d) {
-    return `Demande de devis KST AutoServices${d.occasion ? ' – ' + d.occasion : ''}${d.date ? ' – ' + d.date : ''}`;
+    return `Demande de devis KST Auto Loc’${d.occasion ? ' – ' + d.occasion : ''}${d.date ? ' – ' + d.date : ''}`;
   }
   function mailBody(d) {
     const lines = [d.message.replace(/\r?\n/g, '\r\n'), '', '—', `Nom : ${d.nom}`, `Téléphone : ${d.telephone}`, `E-mail : ${d.email}`];
@@ -1333,7 +1333,7 @@
     render();
     showResult({
       title: 'Votre demande est envoyée',
-      text: 'Merci. Votre demande a bien été transmise à KST AutoServices. Sous réserve de disponibilité, confirmée par KST AutoServices.',
+      text: 'Merci. Votre demande a bien été transmise à KST Auto Loc’. Sous réserve de disponibilité, confirmée par KST Auto Loc’.',
       buttons: BTN.fresh + BTN.call
     });
     announce('Votre demande a bien été envoyée.');
@@ -1354,7 +1354,7 @@
     const payload = {
       access_key: WEB3FORMS_ACCESS_KEY,
       subject: mailSubject(d),
-      from_name: 'Site KST AutoServices',
+      from_name: 'Site KST Auto Loc’',
       name: d.nom,
       email: d.email,
       telephone: d.telephone,
