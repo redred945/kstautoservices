@@ -2272,3 +2272,58 @@ html.is-splash .splash {
   .section-head { margin-bottom: clamp(1.6rem, 6vw, 3rem); }
   .h2 { font-size: clamp(1.85rem, 7.2vw, 4rem); }
 }
+
+/* ==========================================================================
+   17. Mobile plus lumineux — sections ivoire, touches de noir conservées
+   (hero vidéo, réservation, pied de page restent sombres ; les cartes photo
+   des marques et de la flotte restent noires sur le fond ivoire)
+   ========================================================================== */
+@media (max-width: 899.98px) {
+  .brands, .fleet, .zone, .contact {
+    --ink: #f4efe6;
+    --coal: #ede6d9;
+    --graphite: #e7dfcf;
+    --graphite-2: #ddd3bf;
+    --ivory: #1a1712;
+    --ivory-2: #2b261d;
+    --ivory-dim: rgba(26, 23, 18, .78);
+    --ivory-mute: rgba(26, 23, 18, .6);
+    --gold: #7a5f27;
+    --gold-light: #5f4a1d;
+    --line: rgba(122, 95, 39, .26);
+    --line-strong: rgba(122, 95, 39, .55);
+    --line-soft: rgba(26, 23, 18, .11);
+    background: #f4efe6;
+    color: #1a1712;
+    border-color: rgba(122, 95, 39, .2);
+  }
+  .fleet { background: #efe8dc; }
+  .contact { background: #efe8dc; }
+  .brands :focus-visible, .fleet :focus-visible, .zone :focus-visible, .contact :focus-visible { outline-color: #7a5f27; }
+
+  /* les cartes photo gardent la palette sombre d'origine */
+  .brand, .vcard {
+    --ink: #0a0a0b;
+    --coal: #101012;
+    --graphite: #17171a;
+    --graphite-2: #1f1f23;
+    --ivory: #f4efe6;
+    --ivory-2: #ebe4d6;
+    --ivory-dim: rgba(244, 239, 230, .76);
+    --ivory-mute: rgba(244, 239, 230, .58);
+    --gold: #c9a45c;
+    --gold-light: #e8d29a;
+    --line: rgba(201, 164, 92, .22);
+    --line-strong: rgba(201, 164, 92, .55);
+    --line-soft: rgba(244, 239, 230, .1);
+    color: #f4efe6;
+    box-shadow: 0 24px 50px -28px rgba(26, 23, 18, .55);
+  }
+  /* boutons or : texte noir quel que soit le fond */
+  .brands .btn--gold, .fleet .btn--gold, .zone .btn--gold, .contact .btn--gold { color: #0a0a0b; }
+  .fleet > .container .btn--ghost, .zone .btn--ghost, .contact .btn--ghost { background: transparent; }
+  .fleet > .container .btn--ghost:hover, .zone .btn--ghost:hover, .contact .btn--ghost:hover { background: rgba(122, 95, 39, .08); }
+  .hours { background: #fbf8f2; box-shadow: 0 20px 44px -30px rgba(26, 23, 18, .35); }
+  .swipe-track { background: rgba(26, 23, 18, .12); }
+  .brand .swipe-track, .vcard .swipe-track { background: rgba(244, 239, 230, .14); }
+}
