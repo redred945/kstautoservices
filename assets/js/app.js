@@ -1636,6 +1636,16 @@
   trayEl.hidden = false;
   $$('[data-year]').forEach(el => { el.textContent = String(new Date().getFullYear()); });
 
+  /* FAQ (mobile) : afficher les questions masquées */
+  const faqMore = $('[data-faq-more]');
+  if (faqMore) faqMore.addEventListener('click', () => {
+    const faq = faqMore.closest('.faq');
+    faq.classList.add('is-all');
+    faqMore.setAttribute('aria-expanded', 'true');
+    const next = $$('.faq__item summary', faq)[4];
+    if (next) next.focus();
+  });
+
   /* Bouton réseaux flottant (mobile) : le logo déploie WhatsApp, Instagram et Snapchat */
   (function socialFab() {
     const fab = $('[data-social]');
