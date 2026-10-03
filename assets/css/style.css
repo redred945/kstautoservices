@@ -2590,7 +2590,7 @@ html.is-splash .splash {
 }
 
 /* ==========================================================================
-   20. Bouton réseaux flottant (mobile) : WhatsApp + Instagram
+   20. Bouton réseaux flottant (mobile) : WhatsApp + Instagram + Snapchat
    ========================================================================== */
 .social-fab { display: none; }
 @media (max-width: 899.98px) {
@@ -2637,4 +2637,8 @@ html.is-splash .splash {
 }
 @media (prefers-reduced-motion: reduce) {
   .social-fab__link, .social-fab__toggle img, .social-fab__toggle .ico { transition: none; }
+}
+@media (max-width: 899.98px) {
+  .social-fab__link--sc { background: #fffc00; }
+  .social-fab.is-open .social-fab__link--sc { transition-delay: .12s; }
 }

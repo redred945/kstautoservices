@@ -1636,7 +1636,7 @@
   trayEl.hidden = false;
   $$('[data-year]').forEach(el => { el.textContent = String(new Date().getFullYear()); });
 
-  /* Bouton réseaux flottant (mobile) : le logo déploie WhatsApp et Instagram */
+  /* Bouton réseaux flottant (mobile) : le logo déploie WhatsApp, Instagram et Snapchat */
   (function socialFab() {
     const fab = $('[data-social]');
     if (!fab) return;
