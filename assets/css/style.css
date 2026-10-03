@@ -2997,14 +2997,13 @@ html.is-splash .splash {
 .trip__time--main select { max-width: 240px; font: 500 1.15rem/1 var(--sans); }
 .trip__time--main.is-set select { border-color: var(--gold); }
 
-/* Bouton réseaux : masqué pendant la réservation (il couvrait « Continuer ») */
+
+/* Bouton réseaux : médaillon sur fond blanc */
 @media (max-width: 899.98px) {
-  body:has(.cta-bar.is-hidden) .social-fab {
-    bottom: calc(18px + env(safe-area-inset-bottom));
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(20px);
-    transition: opacity .35s var(--ease), transform .45s var(--ease-out), visibility 0s .45s, bottom .55s var(--ease-out);
+  .social-fab__toggle {
+    background: #fff;
+    border-color: rgba(201, 164, 92, .85);
+    box-shadow: 0 14px 30px -12px rgba(26, 23, 18, .45), 0 0 0 4px rgba(244, 239, 230, .7);
   }
-  .social-fab { transition: opacity .35s var(--ease), transform .45s var(--ease-out), bottom .55s var(--ease-out); }
+  .social-fab__toggle .ico { color: #7a5f27; }
 }
