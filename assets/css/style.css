@@ -2642,3 +2642,16 @@ html.is-splash .splash {
   .social-fab__link--sc { background: #fffc00; }
   .social-fab.is-open .social-fab__link--sc { transition-delay: .12s; }
 }
+
+/* Rangées glissables : overflow-x:auto rend aussi l'axe vertical défilable dès que le
+   contenu dépasse (révélations, ombres) — le doigt faisait alors descendre les cartes
+   dans la rangée au lieu de faire défiler la page. On verrouille l'axe vertical. */
+@media (max-width: 899.98px) {
+  .brands__grid, .occasions, .fleet__grid, .facts, .contact__cards {
+    overflow-y: hidden;
+    overscroll-behavior-y: auto;
+    touch-action: pan-x pan-y;
+    padding-bottom: 1.6rem;
+    margin-bottom: -1.3rem;
+  }
+}
