@@ -561,15 +561,15 @@
   let sending = false;
 
   /* Heures : pas de 30 minutes (prise en charge à l'étape 2, heures facultatives des étapes du trajet) */
-  const timeOptions = sel => {
-    let html = `<option value=""${sel ? '' : ' selected'}>Non précisée</option>`;
+  const timeOptions = (sel, empty = 'Non précisée') => {
+    let html = `<option value=""${sel ? '' : ' selected'}>${empty}</option>`;
     for (let m = 0; m < 24 * 60; m += 30) {
       const v = `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
       html += `<option value="${v}"${v === sel ? ' selected' : ''}>${pad(Math.floor(m / 60))}h${pad(m % 60)}</option>`;
     }
     return html;
   };
-  f.time.innerHTML = timeOptions('');
+  f.time.innerHTML = timeOptions('', 'Choisir une heure');
 
   /* Vignettes de l'étape Véhicules */
   const tilesEl = $('[data-tiles]');
@@ -756,6 +756,7 @@
   const tripIco = id => `<svg class="ico" aria-hidden="true"><use href="#${id}"/></svg>`;
   const tripSay = msg => { tripStatus.textContent = ''; setTimeout(() => { tripStatus.textContent = msg; }, 60); };
   const tripErr = { on: false };
+  const timeErr = { on: false };
   let tripNewId = 0;
 
   function pointHTML(pt, i, n) {
@@ -768,7 +769,7 @@
       `<button type="button" class="trip__tool trip__tool--del" data-trip-del="${pt.id}" aria-label="Supprimer l’étape ${num}">${tripIco('i-trash')}</button>` +
       '</div>';
     const under = first
-      ? `<div class="field trip__time trip__time--main"><label for="trip-time-main">${tripIco('i-clock')}Heure de prise en charge</label><select id="trip-time-main" data-trip-time-main>${timeOptions(state.time)}</select></div>`
+      ? `<div class="field trip__time trip__time--main"><label for="trip-time-main">${tripIco('i-clock')}Heure de prise en charge <span class="req" aria-hidden="true">*</span></label><select id="trip-time-main" data-trip-time-main>${timeOptions(state.time, 'Choisir une heure')}</select></div>`
       : `<div class="field trip__time"><label for="trip-time-${pt.id}">Heure <span class="opt">(facultatif)</span></label><select id="trip-time-${pt.id}" data-trip-time="${pt.id}">${timeOptions(pt.time)}</select></div>`;
     return `<li class="trip__pt${pt.id === tripNewId ? ' is-new' : ''}">` +
       `<span class="trip__dot" aria-hidden="true">${ROMAN[i] || num}</span>` +
@@ -811,6 +812,7 @@
     if (!sel) return;
     if (sel.value !== state.time) sel.value = state.time;
     sel.closest('.trip__time--main').classList.toggle('is-set', !!state.time);
+    if (timeErr.on) setTimeError(!state.time);
   }
 
   function setTripError(on) {
@@ -824,7 +826,35 @@
   function checkPickup() {
     const ok = !!state.trip[0].addr.trim();
     setTripError(!ok);
+    const timeOk = checkTime();
+    return ok && timeOk;
+  }
+
+  /* Heure de prise en charge obligatoire : erreur sous le champ de l'étape 2 et sous celui du trajet */
+  function setTimeError(on) {
+    timeErr.on = on;
+    const msg = on ? 'Indiquez l’heure de prise en charge pour continuer.' : '';
+    const box2 = $('[data-time-error]', form);
+    if (box2) { box2.textContent = msg; box2.hidden = !on; }
+    if (on) f.time.setAttribute('aria-invalid', 'true'); else f.time.removeAttribute('aria-invalid');
+    const sel = $('[data-trip-time-main]', tripEl);
+    if (sel) {
+      const wrap = sel.closest('.trip__time--main');
+      let box3 = $('.field__error', wrap);
+      if (!box3) { box3 = document.createElement('p'); box3.className = 'field__error'; box3.id = 'trip-time-err'; wrap.appendChild(box3); sel.setAttribute('aria-describedby', box3.id); }
+      box3.textContent = msg; box3.hidden = !on;
+      wrap.classList.toggle('is-error', on);
+      if (on) sel.setAttribute('aria-invalid', 'true'); else sel.removeAttribute('aria-invalid');
+    }
+  }
+  function checkTime() {
+    const ok = !!state.time;
+    setTimeError(!ok);
     return ok;
+  }
+  function checkDateTime() {
+    const ok = checkTime();
+    return !!state.start && ok;
   }
 
   function setPoint(id, patch) {
@@ -1149,7 +1179,7 @@
   }
 
   const stepDone = n => (n === 1 ? !!state.occasion
-    : n === 2 ? !!state.start
+    : n === 2 ? !!(state.start && state.time)
       : n === 3 ? !!state.trip[0].addr.trim()
         : n === 4 ? state.vehicles.length > 0
           : n === 5 ? !!(FORFAITS.includes(state.forfait) || (state.forfait === 'autre' && state.forfaitAutre.trim()) || state.options.length)
@@ -1190,10 +1220,15 @@
   /* gate : depuis l'étape Trajet, on n'avance pas sans adresse de prise en charge */
   function goStep(n, { scroll = false, focus = true, gate = false } = {}) {
     n = Math.min(STEPS, Math.max(1, Number(n) || 1));
+    if (gate && step === 2 && n > 2 && !checkDateTime()) {
+      if (state.start) f.time.focus(); else { const d = $('.cal__day[tabindex="0"]', calEl); if (d) d.focus(); }
+      announce(state.start ? 'Indiquez l’heure de prise en charge pour continuer.' : 'Choisissez la date de votre événement pour continuer.');
+      return;
+    }
     if (gate && step === 3 && n > 3 && !checkPickup()) {
-      const input = $('[data-trip-addr]', tripEl);
+      const input = state.trip[0].addr.trim() ? $('[data-trip-time-main]', tripEl) : $('[data-trip-addr]', tripEl);
       if (input) input.focus();
-      announce('Indiquez l’adresse de prise en charge pour continuer.');
+      announce(state.trip[0].addr.trim() ? 'Indiquez l’heure de prise en charge pour continuer.' : 'Indiquez l’adresse de prise en charge pour continuer.');
       return;
     }
     hideResult();
@@ -1215,7 +1250,7 @@
     }
   }
 
-  const firstIncompleteBeforeSend = () => (!state.occasion ? 1 : !state.start ? 2 : !state.trip[0].addr.trim() ? 3 : 6);
+  const firstIncompleteBeforeSend = () => (!state.occasion ? 1 : (!state.start || !state.time) ? 2 : !state.trip[0].addr.trim() ? 3 : 6);
 
   /* ==========================================================================
      Validation & envoi

@@ -3007,3 +3007,5 @@ html.is-splash .splash {
   }
   .social-fab__toggle .ico { color: #7a5f27; }
 }
+.trip__time--main.is-error { border-color: #b4483a; background: linear-gradient(90deg, rgba(180, 72, 58, .08), rgba(180, 72, 58, .02)); }
+.trip__time--main .field__error, [data-time-error] { margin-top: .5rem; color: #a3392a; }
