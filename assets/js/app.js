@@ -768,13 +768,13 @@
       `<button type="button" class="trip__tool trip__tool--del" data-trip-del="${pt.id}" aria-label="Supprimer l’étape ${num}">${tripIco('i-trash')}</button>` +
       '</div>';
     const under = first
-      ? `<p class="trip__when">${tripIco('i-clock')}<span data-trip-when></span><button type="button" class="link" data-goto-step="2" data-focus="#f-time" data-trip-when-link></button></p>`
+      ? `<div class="field trip__time trip__time--main"><label for="trip-time-main">${tripIco('i-clock')}Heure de prise en charge</label><select id="trip-time-main" data-trip-time-main>${timeOptions(state.time)}</select></div>`
       : `<div class="field trip__time"><label for="trip-time-${pt.id}">Heure <span class="opt">(facultatif)</span></label><select id="trip-time-${pt.id}" data-trip-time="${pt.id}">${timeOptions(pt.time)}</select></div>`;
     return `<li class="trip__pt${pt.id === tripNewId ? ' is-new' : ''}">` +
       `<span class="trip__dot" aria-hidden="true">${ROMAN[i] || num}</span>` +
       '<div class="trip__main">' +
       '<div class="trip__head"><div class="trip__titles">' +
-      `<label class="trip__kicker" for="${addrId}">${first ? 'Prise en charge <span class="req" aria-hidden="true">*</span><span class="vh"> : adresse</span>' : `Étape ${num}<span class="vh"> : adresse</span>`}</label>` +
+      `<label class="trip__kicker" for="${addrId}">${first ? 'Adresse de prise en charge <span class="req" aria-hidden="true">*</span>' : `Étape ${num}<span class="vh"> : adresse</span>`}</label>` +
       (last ? '<span class="trip__tag">Arrivée</span>' : '') +
       '</div>' +
       tools +
@@ -805,14 +805,12 @@
     if (tripErr.on) setTripError(true);
   }
 
-  /* Rappel de l'heure choisie à l'étape 2, sous la prise en charge */
+  /* Heure de prise en charge, mise en évidence sous l'adresse (même valeur qu'à l'étape 2) */
   function renderTripWhen() {
-    const el = $('[data-trip-when]', tripEl);
-    if (!el) return;
-    const link = $('[data-trip-when-link]', tripEl);
-    el.textContent = state.time ? `Prise en charge à ${timeLabel(state.time)}` : 'Heure de prise en charge non précisée';
-    link.textContent = state.time ? 'Modifier' : 'Préciser';
-    link.setAttribute('aria-label', state.time ? 'Modifier l’heure de prise en charge' : 'Préciser l’heure de prise en charge');
+    const sel = $('[data-trip-time-main]', tripEl);
+    if (!sel) return;
+    if (sel.value !== state.time) sel.value = state.time;
+    sel.closest('.trip__time--main').classList.toggle('is-set', !!state.time);
   }
 
   function setTripError(on) {
@@ -1615,7 +1613,7 @@
     const t = e.target;
     if (t.name === 'occasion') update({ occasion: t.value });
     else if (t.name === 'mode') update(t.value === 'range' ? { mode: 'range' } : { mode: 'single', end: '' });
-    else if (t === f.time) update({ time: t.value });
+    else if (t === f.time || t.matches('[data-trip-time-main]')) update({ time: t.value });
     else if (t.matches('[data-trip-time]')) setPoint(Number(t.dataset.tripTime), { time: t.value });
     else if (t.name === 'vehicule') toggleVehicle(t.value, t.checked);
     else if (t.name === 'forfait') update({ forfait: t.value });

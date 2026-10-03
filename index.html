@@ -41,7 +41,7 @@
       }
     } catch (e) {}
   </script>
-  <link rel="stylesheet" href="assets/css/style.css?v=202610031919">
+  <link rel="stylesheet" href="assets/css/style.css?v=202610032237">
   <script>
     /* Les révélations au scroll ne s'activent que si app.js s'exécute ; sinon tout reste visible. */
     document.documentElement.classList.add('js');
@@ -739,7 +739,7 @@
               <!-- Étape 3 : trajet (points rendus par app.js) -->
               <section class="panel" data-panel="3" aria-labelledby="p3-title" hidden>
                 <h3 class="panel__title" id="p3-title" tabindex="-1"><span class="panel__num" aria-hidden="true">03</span>Votre trajet</h3>
-                <p class="panel__hint">Indiquez l'adresse de prise en charge, puis ajoutez les étapes de votre déplacement. L'heure de chaque étape est facultative.</p>
+                <p class="panel__hint">Indiquez l'adresse et l'heure de prise en charge, puis ajoutez les étapes de votre déplacement. L'heure de chaque étape est facultative.</p>
                 <ol class="trip" data-trip aria-label="Trajet"></ol>
                 <p class="vh" role="status" aria-live="polite" data-trip-status></p>
                 <p class="note">Saisissez une adresse librement ou choisissez l'une des suggestions.</p>
@@ -882,8 +882,7 @@
               <button type="button" class="icon-btn recap__close" data-recap-close aria-label="Fermer le récapitulatif">
                 <svg class="ico" aria-hidden="true"><use href="#i-close"/></svg>
               </button>
-              <div class="fp__seal" aria-hidden="true"><span>KST</span></div>
-              <h3 class="fp__kicker" id="recap-title">Auto Loc’ · Demande de devis</h3>
+              <h3 class="fp__live" id="recap-title"><span class="fp__pulse" aria-hidden="true"></span>Votre demande en cours</h3>
               <div class="fp__orn" aria-hidden="true"><i></i></div>
               <p class="fp__invite">Vous êtes invité à composer</p>
               <p class="fp__occ" data-r="occasion"></p>
@@ -1148,6 +1147,6 @@
     <p class="noscript">Le formulaire de devis nécessite JavaScript. Appelez-nous au <a href="tel:+33648480558">06 48 48 05 58</a> ou écrivez à <a href="mailto:contact@kstautoservices.com">contact@kstautoservices.com</a>.</p>
   </noscript>
 
-  <script src="assets/js/app.js?v=202610031919" defer></script>
+  <script src="assets/js/app.js?v=202610032237" defer></script>
 </body>
 </html>
