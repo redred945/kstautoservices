@@ -2939,3 +2939,19 @@ html.is-splash .splash {
 @media (max-width: 899.98px) {
   .footer__top > div:nth-child(3) li:nth-child(2) { grid-column: 1 / -1; grid-row: 3; }   /* e-mail sur sa propre ligne */
 }
+
+/* Options sans prix : « Prix sur demande » + note du bouquet floral */
+.ocard__txt { display: flex; flex-direction: column; gap: .2rem; min-width: 0; }
+.ocard__note { font: italic 400 .95rem/1.35 var(--serif); color: var(--ivory-mute); }
+.ocard__price {
+  font: italic 400 .98rem/1.2 var(--serif);
+  white-space: normal;
+  text-align: right;
+  max-width: 7.5em;
+  color: var(--gold);
+}
+.incl__list strong { font-weight: 500; }
+@media (max-width: 420px) {
+  .ocard { grid-template-columns: auto minmax(0, 1fr); }
+  .ocard__price { grid-column: 2; text-align: left; max-width: none; margin-top: -.35rem; font-size: .92rem; }
+}

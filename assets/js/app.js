@@ -131,20 +131,18 @@
     autre: { label: 'Autre événement', phrase: 'un événement', icon: 'i-spark' }
   };
 
-  /* Forfait (durée) et options payantes, d'après la fiche de commande du client.
-     Aucun prix de forfait : il reste sur devis. Les km supplémentaires (3 €/km au-delà de 130 km)
-     ne sont pas une option : KST les calcule d'après le trajet. */
+  /* Forfait (durée) et options, d'après la fiche de commande du client.
+     Aucun prix affiché (demande du client) : tout est « prix sur demande ». Les km au-delà des
+     130 km inclus ne sont pas une option : KST les calcule d'après le trajet. */
   const FORFAITS = ['5h', '6h', '7h', '8h', '9h', '10h'];
   const OPTIONS = [
-    { id: 'champagne', label: 'Bouteille de champagne', short: 'Champagne', price: 150 },
-    { id: 'bouquet', label: 'Bouquet floral', short: 'Bouquet floral', price: 150 },
-    { id: 'plaque', label: 'Plaque d’immatriculation personnalisée', short: 'Plaque personnalisée', price: 100 },
-    { id: 'poteau', label: 'Poteau + tapis rouge', short: 'Poteau + tapis rouge', price: 120 }
+    { id: 'champagne', label: 'Bouteille de champagne', short: 'Champagne' },
+    { id: 'bouquet', label: 'Bouquet floral', short: 'Bouquet floral', note: 'Un bouquet artificiel est déjà inclus dans le forfait.' },
+    { id: 'plaque', label: 'Plaque d’immatriculation personnalisée', short: 'Plaque personnalisée' },
+    { id: 'poteau', label: 'Poteau + tapis rouge', short: 'Poteau + tapis rouge' }
   ];
   const optById = Object.fromEntries(OPTIONS.map(o => [o.id, o]));
   const NBSP = String.fromCharCode(160);
-  const eur = n => n + ' €';                    // message, e-mail
-  const eurU = n => n + NBSP + '€';              // interface (espace insécable)
   const hoursLabel = id => id.replace('h', ' h');
 
   /* ==========================================================================
@@ -211,14 +209,13 @@
     : state.forfait === 'autre' ? (state.forfaitAutre.trim() || 'autre durée') : '');
   const forfaitDetail = () => { const t = forfaitText(); return t && state.forfait === 'autre' && !state.forfaitAutre.trim() ? t + ' (à préciser)' : t; };
   const chosenOptions = () => state.options.map(id => optById[id]).filter(Boolean);
-  const optionsTotal = () => chosenOptions().reduce((t, o) => t + o.price, 0);
   const lcFirst = t => t.charAt(0).toLowerCase() + t.slice(1);
-  const optionItems = () => chosenOptions().map(o => lcFirst(o.label) + ' (' + eur(o.price) + ')').join(', ');
-  const optionList = () => chosenOptions().map(o => o.label + ' (' + eur(o.price) + ')').join(', ');
+  const optionItems = () => chosenOptions().map(o => lcFirst(o.label)).join(', ');
+  const optionList = () => chosenOptions().map(o => o.label).join(', ');
   const optionsLine = () => {
     const n = state.options.length;
     if (!chosenOptions().length) return '';
-    return n > 1 ? 'Options : ' + optionItems() + ' — total options ' + eur(optionsTotal()) + '.' : 'Option : ' + optionItems() + '.';
+    return (n > 1 ? 'Options : ' : 'Option : ') + optionItems() + ' (prix sur demande).';
   };
 
   function buildMessage() {
@@ -602,7 +599,8 @@
   optionsEl.innerHTML = OPTIONS.map(o =>
     '<li><label class="ocard" data-opt="' + o.id + '"><input type="checkbox" name="option" value="' + o.id + '">' +
     '<span class="ocard__check" aria-hidden="true"><svg class="ico"><use href="#i-check"/></svg></span>' +
-    '<span class="ocard__name">' + esc(o.label) + '</span><span class="ocard__price">' + eurU(o.price) + '</span></label></li>'
+    '<span class="ocard__txt"><span class="ocard__name">' + esc(o.label) + '</span>' + (o.note ? '<span class="ocard__note">' + esc(o.note) + '</span>' : '') + '</span>' +
+    '<span class="ocard__price">Prix sur demande</span></label></li>'
   ).join('');
 
   /* ==========================================================================
@@ -1071,7 +1069,7 @@
       : '<li class="is-empty">Sélectionnez un ou plusieurs véhicules</li>';
     const opts = chosenOptions(), n = opts.length;
     setR('forfait', forfaitText(), 'À définir');
-    setR('options', n ? n + ' option' + (n > 1 ? 's' : '') + ' · ' + eurU(optionsTotal()) : '', 'Aucune');
+    setR('options', n ? n + ' option' + (n > 1 ? 's' : '') : '', 'Aucune');
     const names = $('[data-r="optnames"]', recapEl), list = opts.map(o => o.short).join(' · ');
     names.hidden = !n;
     if (names.textContent !== list) names.textContent = list;
@@ -1129,7 +1127,7 @@
     whatsappLinks.forEach(a => { a.href = CONTACT.wa + (text ? `?text=${encodeURIComponent(text)}` : ''); });
   }
 
-  /* Sous-total des options (zone aria-live) et état des cartes Forfait / Options */
+  /* Récapitulatif des options (zone aria-live) et état des cartes Forfait / Options */
   let sumKey = '';
   function renderExtras() {
     $$('input[name="forfait"]', form).forEach(i => { i.checked = i.value === state.forfait; });
@@ -1141,12 +1139,12 @@
     forfaitOtherEl.hidden = state.forfait !== 'autre';
     setVal(f.forfaitAutre, state.forfaitAutre);
     forfaitClearBtn.hidden = !state.forfait;
-    const n = chosenOptions().length, total = optionsTotal(), key = n + ':' + total;
+    const n = chosenOptions().length, key = String(n);
     if (key === sumKey) return;
     sumKey = key;
     optSumEl.innerHTML = n
-      ? '<p class="optsum__row"><span class="optsum__k">Options sélectionnées<span class="vh"> :</span></span><span class="optsum__v">' + eurU(total) + '</span></p>' +
-        '<p class="optsum__n">hors forfait et véhicule, sur devis</p>'
+      ? '<p class="optsum__row"><span class="optsum__k">Options sélectionnées<span class="vh"> :</span></span><span class="optsum__v">' + n + '</span></p>' +
+        '<p class="optsum__n">Prix sur demande, précisés dans votre devis</p>'
       : '<p class="optsum__none">Aucune option sélectionnée</p>';
     const v = $('.optsum__v', optSumEl);
     if (v && inBooking) v.classList.add('fp-in');
@@ -1275,8 +1273,7 @@
       heure: state.time ? timeLabel(state.time) : '',
       vehicules: state.vehicles.map(id => vehicles[id].full).join(', '),
       forfait: forfaitDetail(),
-      options: optionList(),
-      totalOptions: chosenOptions().length ? eur(optionsTotal()) : ''
+      options: optionList()
     };
   }
 
@@ -1292,7 +1289,7 @@
     if (d.etapes) d.etapes.split('\n').forEach(l => lines.push(l));
     if (d.vehicules) lines.push(`Véhicules : ${d.vehicules}`);
     if (d.forfait) lines.push(`Forfait : ${d.forfait}`);
-    if (d.options) lines.push(`Options : ${d.options}`, `Total options : ${d.totalOptions}`);
+    if (d.options) lines.push(`Options (prix sur demande) : ${d.options}`);
     return lines.join('\r\n');
   }
   const mailtoUrl = d => `mailto:${CONTACT.email}?subject=${encodeURIComponent(mailSubject(d))}&body=${encodeURIComponent(mailBody(d))}`;
@@ -1366,8 +1363,7 @@
       etapes: d.etapes,
       vehicules: d.vehicules,
       forfait: d.forfait,
-      options: d.options,
-      total_options: d.totalOptions
+      options: d.options
     };
     setLoading(true);
     const ctl = new AbortController();
