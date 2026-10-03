@@ -21,7 +21,7 @@ Pour prévisualiser en local : `npx serve .` (ou tout serveur statique). Ouvrir 
 
 - Menu mobile, en-tête verre dépoli au scroll, reveals et parallax (désactivés avec `prefers-reduced-motion`).
 - Flotte : filtres par marque, sélection multiple, galerie plein écran (clavier, flèches, Échap, swipe, piège à focus).
-- **Module de demande** (formulaire unique) : occasion + ville, calendrier maison (jour ou plage, lundi en premier, clavier), heure de prise en charge, véhicules, coordonnées. Le champ « Votre demande » est rédigé en direct d'après les choix et reste modifiable. État sauvegardé dans `localStorage`, effacé après un envoi réussi.
+- **Module de demande** (formulaire unique) : 5 étapes : occasion, date et heure de prise en charge (calendrier maison, jour ou plage, lundi en premier, clavier), trajet (prise en charge + jusqu'à 7 étapes, réordonnables, autocomplétion via la Base Adresse Nationale, saisie libre toujours possible), véhicules, coordonnées. Le champ « Votre demande » est rédigé en direct d'après les choix et reste modifiable. État sauvegardé dans `localStorage`, effacé après un envoi réussi.
 - Récapitulatif sticky (bureau) ou tiroir (mobile), barre d'action fixe sur mobile.
 
 ## Brancher l'envoi des demandes (Web3Forms)

@@ -232,6 +232,7 @@ h1, h2, h3, h4, p, figure, dl, dd { margin: 0; }
 .btn--ghost:hover { border-color: var(--gold-light); background: rgba(201, 164, 92, .1); }
 .btn--text {
   padding-inline: .6rem;
+  background: none;
   color: var(--ivory-dim);
   letter-spacing: .16em;
 }
@@ -1049,7 +1050,7 @@ html.is-splash .hero__title .line:nth-child(3) > span { animation-delay: 2.98s; 
   .bcard__bar { position: static; padding: 1.2rem clamp(1.4rem, 3.5vw, 2.8rem) 1rem; background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }
 }
 
-.stepper { flex: 1; min-width: 0; }
+.stepper { flex: 1; min-width: 0; container-type: inline-size; }
 .stepper__list { display: flex; justify-content: space-between; gap: .2rem; }
 .stepper__btn {
   display: flex;
@@ -1067,7 +1068,7 @@ html.is-splash .hero__title .line:nth-child(3) > span { animation-delay: 2.98s; 
   transition: color .4s var(--ease);
 }
 .stepper__num { font: italic 500 1.25rem/1 var(--serif); letter-spacing: 0; }
-.stepper__label { display: none; }
+.stepper__label { display: none; white-space: nowrap; }
 .stepper__btn:hover { color: var(--ivory); }
 .stepper__btn[data-done="true"] .stepper__num { color: var(--gold); }
 .stepper__btn[aria-current="step"] { color: var(--gold-light); }
@@ -1075,12 +1076,16 @@ html.is-splash .hero__title .line:nth-child(3) > span { animation-delay: 2.98s; 
 .stepper__track { position: relative; height: 1px; margin-top: .35rem; background: var(--line-soft); }
 .stepper__track i {
   position: absolute; left: 0; top: 0;
-  height: 1px; width: 25%;
+  height: 1px; width: 20%;
   background: var(--gold-grad);
   transition: width .9s var(--ease-out);
 }
-@media (min-width: 700px) {
-  .stepper__list { justify-content: flex-start; gap: clamp(.6rem, 2vw, 2rem); }
+/* 5 étapes : selon la largeur réellement disponible, on n'affiche que le libellé de l'étape en cours, puis tous */
+@container (min-width: 340px) {
+  .stepper__btn[aria-current="step"] .stepper__label { display: inline; }
+}
+@container (min-width: 700px) {
+  .stepper__list { justify-content: flex-start; gap: clamp(.2rem, 1vw, 1rem); }
   .stepper__label { display: inline; }
   .stepper__btn[data-done="true"]:not([aria-current="step"]) .stepper__label::after {
     content: "";
@@ -1118,6 +1123,17 @@ html.is-splash .hero__title .line:nth-child(3) > span { animation-delay: 2.98s; 
   font: 500 .7rem/1 var(--sans);
   letter-spacing: 0;
 }
+.recap-toggle { position: relative; }
+.recap-toggle .ico { display: none; font-size: 1.25rem; }
+/* petits écrans : 5 étapes + bouton « Ma demande » en icône (le texte reste lu par les lecteurs d'écran) */
+@media (max-width: 699.98px) {
+  .recap-toggle { gap: .5rem; padding: 0 .65rem; }
+  .recap-toggle .ico { display: block; }
+  .recap-toggle span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .stepper__btn { min-width: 40px; padding: 0 .3rem; }
+  .stepper__list { gap: 0; }
+}
+@media (min-width: 700px) and (max-width: 999.98px) { .stepper__btn { padding: 0 .4rem; } }
 @media (min-width: 1000px) { .recap-toggle { display: none; } }
 
 .bcard__body { padding: clamp(1.3rem, 3.6vw, 2.8rem); }
@@ -1318,7 +1334,124 @@ html.is-splash .hero__title .line:nth-child(3) > span { animation-delay: 2.98s; 
 .cal__grid td.is-range-start.is-range-end { background: none; }
 .cal__status { min-height: 1.6em; margin-top: .9rem; padding-inline: .3rem; font-size: .93rem; color: var(--gold-light); }
 
-/* étape 3 : véhicules */
+/* étape « trajet » : fil d'or 1 px et pastilles en chiffres romains */
+.trip { --dot: 34px; margin: 0 0 .4rem; padding: 0; list-style: none; }
+.trip__pt, .trip__addrow {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--dot) minmax(0, 1fr);
+  column-gap: clamp(.8rem, 3vw, 1.3rem);
+}
+.trip__pt::before {
+  content: "";
+  position: absolute; left: calc(var(--dot) / 2); top: calc(var(--dot) + 9px); bottom: -5px;
+  width: 1px;
+  background: linear-gradient(180deg, var(--gold), var(--line));
+}
+.trip__dot {
+  position: relative; z-index: 1;
+  display: grid; place-items: center;
+  width: var(--dot); height: var(--dot);
+  margin-top: 5px;
+  border: 1px solid var(--gold);
+  border-radius: 50%;
+  background: var(--graphite);
+  color: var(--gold-light);
+  font: italic 500 1rem/1 var(--serif);
+  letter-spacing: 0;
+}
+.trip__pt:first-child .trip__dot { border-color: transparent; background: var(--gold-grad); color: #15110a; }
+.trip__dot--add { margin-top: 0; border-style: dashed; background: transparent; color: var(--gold); transition: background-color .4s var(--ease), border-color .4s var(--ease); }
+.trip__dot--add .ico { font-size: 1.1rem; }
+.trip__main { min-width: 0; padding-bottom: 1.5rem; }
+.trip__head { display: flex; align-items: center; justify-content: space-between; gap: .4rem; min-height: 44px; }
+.trip__titles { display: flex; flex-wrap: wrap; align-items: center; gap: .1rem .7rem; min-width: 0; }
+.trip__kicker { font: 500 1.4rem/1.1 var(--serif); color: var(--ivory); }
+.trip__tag {
+  padding: .3rem .6rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  font: 500 .58rem/1 var(--sans);
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+}
+.trip__tools { display: flex; flex: none; }
+.trip__tool {
+  display: grid; place-items: center;
+  width: 44px; height: 44px;
+  padding: 0;
+  border: 0; border-radius: 50%;
+  background: none;
+  color: var(--ivory-dim);
+  cursor: pointer;
+  transition: color .3s var(--ease), background-color .3s var(--ease);
+}
+.trip__tool .ico { font-size: 1.15rem; }
+.trip__tool:hover:not([disabled]) { color: var(--gold-light); background: rgba(201, 164, 92, .1); }
+.trip__tool--del:hover:not([disabled]) { color: var(--danger); background: rgba(227, 139, 124, .1); }
+.trip__tool[disabled] { opacity: .28; cursor: not-allowed; }
+.trip__tool:focus-visible, .trip__add:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 2px; }
+.trip__field { margin-bottom: .5rem; }
+.trip__input { scroll-margin-block: calc(var(--header-h) + 110px) 120px; }
+.trip__time { max-width: 260px; margin: .6rem 0 0; }
+.trip__when {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0 .6rem;
+  margin: 0;
+  font: italic 400 1.1rem/1.4 var(--serif);
+  color: var(--ivory-dim);
+}
+.trip__when .ico { color: var(--gold); font-size: 1rem; }
+.trip__when .link { padding-inline: .2rem; font-size: .84rem; }
+.trip__pt.is-new { animation: tripIn .6s var(--ease-out) both; }
+@keyframes tripIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+.trip__add {
+  display: grid; grid-template-columns: var(--dot) minmax(0, 1fr);
+  align-items: center;
+  grid-column: 1 / -1;
+  column-gap: clamp(.8rem, 3vw, 1.3rem);
+  width: 100%; min-height: 48px;
+  padding: 0;
+  border: 0; border-radius: 2px;
+  background: none;
+  color: var(--gold-light);
+  font: 500 .72rem/1.3 var(--sans);
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  text-align: left;
+  cursor: pointer;
+}
+.trip__add:hover:not([disabled]) .trip__dot--add { border-color: var(--gold-light); background: rgba(201, 164, 92, .12); }
+.trip__add[disabled] { opacity: .55; cursor: not-allowed; }
+.trip__addrow { display: block; }
+
+/* autocomplétion d'adresse */
+.combo { position: relative; }
+.combo__list {
+  position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 5;
+  max-height: 19rem; overflow-y: auto; overscroll-behavior: contain;
+  margin: 0; padding: .3rem;
+  list-style: none;
+  background: var(--graphite-2);
+  border: 1px solid var(--line-strong);
+  border-radius: 3px;
+  box-shadow: 0 26px 50px -18px rgba(0, 0, 0, .9);
+}
+.combo__list[hidden] { display: none; }
+.combo__opt {
+  display: flex; flex-direction: column; justify-content: center; gap: .1rem;
+  min-height: 48px;
+  padding: .5rem .8rem;
+  border-radius: 2px;
+  cursor: pointer;
+}
+.combo__main { font-size: .98rem; line-height: 1.3; color: var(--ivory); overflow-wrap: anywhere; }
+.combo__sub { font-size: .82rem; line-height: 1.3; color: var(--ivory-mute); }
+.combo__opt:hover { background: rgba(201, 164, 92, .1); }
+.combo__opt[aria-selected="true"] { background: rgba(201, 164, 92, .18); box-shadow: inset 2px 0 0 var(--gold); }
+
+/* étape 4 : véhicules */
 .tiles-set { min-width: 0; margin: 0; padding: 0; border: 0; }
 .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
 @media (min-width: 760px) { .tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
@@ -1383,7 +1516,7 @@ html.is-splash .hero__title .line:nth-child(3) > span { animation-delay: 2.98s; 
 .included .ico { width: 1.6rem; height: 1.6rem; margin-top: .1rem; color: var(--gold); }
 .included strong { color: var(--ivory); font-weight: 500; }
 
-/* étape 4 : coordonnées */
+/* étape 5 : coordonnées */
 .mini-recap { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.6rem; }
 .mini-recap:empty { display: none; }
 .mini {
@@ -1516,17 +1649,20 @@ html.is-splash .hero__title .line:nth-child(3) > span { animation-delay: 2.98s; 
   overflow-wrap: anywhere;
 }
 .fp__date { margin-top: .85rem; font: 400 clamp(1.3rem, 2vw, 1.55rem)/1.2 var(--serif); }
-.fp__city {
+.fp__route {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .15rem .6rem;
   margin-top: .35rem;
   font: 400 .68rem/1.5 var(--sans);
   letter-spacing: .16em;
   text-transform: uppercase;
   color: var(--paper-mute);
 }
-.fp__city:not(.is-empty)::before { content: "à "; text-transform: lowercase; letter-spacing: .1em; }
-.fp__occ.is-empty, .fp__date.is-empty, .fp__city.is-empty { font-style: italic; font-weight: 300; color: var(--paper-mute); opacity: .62; }
+.fp__route.is-single:not(.is-empty)::before { content: "à"; text-transform: lowercase; letter-spacing: .1em; }
+.fp__sep { flex: none; width: 16px; height: 1px; background: var(--gold-deep); opacity: .75; }
+.fp__cnt::before { content: "·"; margin-right: .6rem; }
+.fp__occ.is-empty, .fp__date.is-empty, .fp__route.is-empty { font-style: italic; font-weight: 300; color: var(--paper-mute); opacity: .62; }
 .fp__occ.is-empty { font-size: clamp(2rem, 3.4vw, 2.7rem); }
-.fp__city.is-empty { font-family: var(--serif); font-size: 1rem; letter-spacing: 0; text-transform: none; }
+.fp__route.is-empty { font-family: var(--serif); font-size: 1rem; letter-spacing: 0; text-transform: none; }
 .fp-in { animation: fpIn .9s var(--ease-out) both; }
 @keyframes fpIn { from { opacity: 0; transform: translateY(8px); filter: blur(3px); } to { opacity: 1; transform: none; filter: none; } }
 .fp__k {

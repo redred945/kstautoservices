@@ -41,7 +41,7 @@
       }
     } catch (e) {}
   </script>
-  <link rel="stylesheet" href="assets/css/style.css?v=202610031713">
+  <link rel="stylesheet" href="assets/css/style.css?v=202610031935">
   <script>
     /* Les révélations au scroll ne s'activent que si app.js s'exécute ; sinon tout reste visible. */
     document.documentElement.classList.add('js');
@@ -165,6 +165,8 @@
       <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"/></symbol>
       <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
       <symbol id="i-copy" viewBox="0 0 24 24"><path d="M8 8h11v12H8zM5 16V4h11"/></symbol>
+      <symbol id="i-chev-u" viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 12.5h9l1-12.5M10 11v5M14 11v5"/></symbol>
       <symbol id="i-crown" viewBox="0 0 24 24"><path d="M4 18h16M4 18L3 8l5 4 4-6 4 6 5-4-1 10"/></symbol>
     </defs>
   </svg>
@@ -620,7 +622,7 @@
 
         <div class="fleet__next" data-reveal>
           <p data-fleet-summary>Sélectionnez un ou plusieurs véhicules pour les ajouter à votre demande.</p>
-          <a class="btn btn--ghost" href="#reservation" data-goto-step="3">Poursuivre ma demande <svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          <a class="btn btn--ghost" href="#reservation" data-goto-step="4">Poursuivre ma demande <svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></a>
         </div>
       </div>
     </section>
@@ -643,14 +645,15 @@
               <nav class="stepper" aria-label="Étapes de votre demande" data-stepper>
                 <ol class="stepper__list">
                   <li><button type="button" class="stepper__btn" data-step-btn="1" aria-label="Étape 1 : Occasion"><span class="stepper__num" aria-hidden="true">01</span><span class="stepper__label">Occasion</span></button></li>
-                  <li><button type="button" class="stepper__btn" data-step-btn="2" aria-label="Étape 2 : Date"><span class="stepper__num" aria-hidden="true">02</span><span class="stepper__label">Date</span></button></li>
-                  <li><button type="button" class="stepper__btn" data-step-btn="3" aria-label="Étape 3 : Véhicules"><span class="stepper__num" aria-hidden="true">03</span><span class="stepper__label">Véhicules</span></button></li>
-                  <li><button type="button" class="stepper__btn" data-step-btn="4" aria-label="Étape 4 : Coordonnées"><span class="stepper__num" aria-hidden="true">04</span><span class="stepper__label">Coordonnées</span></button></li>
+                  <li><button type="button" class="stepper__btn" data-step-btn="2" aria-label="Étape 2 : Date et heure"><span class="stepper__num" aria-hidden="true">02</span><span class="stepper__label">Date &amp; heure</span></button></li>
+                  <li><button type="button" class="stepper__btn" data-step-btn="3" aria-label="Étape 3 : Trajet"><span class="stepper__num" aria-hidden="true">03</span><span class="stepper__label">Trajet</span></button></li>
+                  <li><button type="button" class="stepper__btn" data-step-btn="4" aria-label="Étape 4 : Véhicules"><span class="stepper__num" aria-hidden="true">04</span><span class="stepper__label">Véhicules</span></button></li>
+                  <li><button type="button" class="stepper__btn" data-step-btn="5" aria-label="Étape 5 : Coordonnées"><span class="stepper__num" aria-hidden="true">05</span><span class="stepper__label">Coordonnées</span></button></li>
                 </ol>
                 <div class="stepper__track" aria-hidden="true"><i data-stepper-fill></i></div>
               </nav>
               <button type="button" class="recap-toggle" data-recap-open aria-haspopup="dialog" aria-controls="recap">
-                <span>Ma demande</span><b data-count>0</b>
+                <svg class="ico" aria-hidden="true"><use href="#i-mail"/></svg><span>Ma demande</span><b data-count>0</b>
               </button>
             </div>
 
@@ -675,10 +678,6 @@
                     <span class="occ__box"><svg class="ico" aria-hidden="true"><use href="#i-spark"/></svg><strong>Autre événement</strong></span>
                   </label>
                 </fieldset>
-                <div class="field">
-                  <label for="f-city">Ville de l'événement</label>
-                  <input id="f-city" name="ville" type="text" autocomplete="address-level2" placeholder="Ex. Meaux" maxlength="80">
-                </div>
                 <div class="panel__nav">
                   <span></span>
                   <button type="button" class="btn btn--gold" data-next>Continuer <svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></button>
@@ -687,8 +686,8 @@
 
               <!-- Étape 2 : date -->
               <section class="panel" data-panel="2" aria-labelledby="p2-title" hidden>
-                <h3 class="panel__title" id="p2-title" tabindex="-1"><span class="panel__num" aria-hidden="true">02</span>Votre date</h3>
-                <p class="panel__hint">Choisissez une journée ou une période.</p>
+                <h3 class="panel__title" id="p2-title" tabindex="-1"><span class="panel__num" aria-hidden="true">02</span>Date et heure</h3>
+                <p class="panel__hint">Choisissez une journée ou une période, puis l'heure de prise en charge.</p>
 
                 <div class="seg" role="radiogroup" aria-label="Type de sélection">
                   <label><input type="radio" name="mode" value="single" checked><span>Une journée</span></label>
@@ -730,9 +729,22 @@
                 </div>
               </section>
 
-              <!-- Étape 3 : véhicules -->
+              <!-- Étape 3 : trajet (points rendus par app.js) -->
               <section class="panel" data-panel="3" aria-labelledby="p3-title" hidden>
-                <h3 class="panel__title" id="p3-title" tabindex="-1"><span class="panel__num" aria-hidden="true">03</span>Vos véhicules</h3>
+                <h3 class="panel__title" id="p3-title" tabindex="-1"><span class="panel__num" aria-hidden="true">03</span>Votre trajet</h3>
+                <p class="panel__hint">Indiquez l'adresse de prise en charge, puis ajoutez les étapes de votre déplacement. L'heure de chaque étape est facultative.</p>
+                <ol class="trip" data-trip aria-label="Trajet"></ol>
+                <p class="vh" role="status" aria-live="polite" data-trip-status></p>
+                <p class="note">Saisissez une adresse librement ou choisissez l'une des suggestions.</p>
+                <div class="panel__nav">
+                  <button type="button" class="btn btn--text" data-prev><svg class="ico" aria-hidden="true"><use href="#i-chev-l"/></svg> Retour</button>
+                  <button type="button" class="btn btn--gold" data-next>Continuer <svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+                </div>
+              </section>
+
+              <!-- Étape 4 : véhicules -->
+              <section class="panel" data-panel="4" aria-labelledby="p4-title" hidden>
+                <h3 class="panel__title" id="p4-title" tabindex="-1"><span class="panel__num" aria-hidden="true">04</span>Vos véhicules</h3>
                 <p class="panel__hint">Sélectionnez un ou plusieurs véhicules. Vous pouvez aussi ne rien choisir et laisser KST AutoServices vous conseiller.</p>
                 <fieldset class="tiles-set">
                   <legend class="vh">Véhicules souhaités</legend>
@@ -748,9 +760,9 @@
                 </div>
               </section>
 
-              <!-- Étape 4 : coordonnées et envoi -->
-              <section class="panel" data-panel="4" aria-labelledby="p4-title" hidden>
-                <h3 class="panel__title" id="p4-title" tabindex="-1"><span class="panel__num" aria-hidden="true">04</span>Vos coordonnées</h3>
+              <!-- Étape 5 : coordonnées et envoi -->
+              <section class="panel" data-panel="5" aria-labelledby="p5-title" hidden>
+                <h3 class="panel__title" id="p5-title" tabindex="-1"><span class="panel__num" aria-hidden="true">05</span>Vos coordonnées</h3>
                 <p class="panel__hint">Votre demande est rédigée d'après vos choix ; vous pouvez la modifier librement.</p>
 
                 <div class="mini-recap" data-mini-recap></div>
@@ -828,7 +840,7 @@
               <p class="fp__invite">Vous êtes invité à composer</p>
               <p class="fp__occ" data-r="occasion"></p>
               <p class="fp__date" data-r="date"></p>
-              <p class="fp__city" data-r="city"></p>
+              <p class="fp__route" data-r="route"></p>
               <div class="fp__orn" aria-hidden="true"><i></i></div>
               <p class="fp__k">Véhicules</p>
               <ul class="fp__cars" data-r="vehicles"></ul>
@@ -838,9 +850,9 @@
               </ul>
               <div class="fp__edit">
                 <button type="button" data-goto-step="1">Occasion</button>
-                <button type="button" data-goto-step="1" data-focus="#f-city">Ville</button>
                 <button type="button" data-goto-step="2">Date</button>
-                <button type="button" data-goto-step="3">Véhicules</button>
+                <button type="button" data-goto-step="3">Trajet</button>
+                <button type="button" data-goto-step="4">Véhicules</button>
               </div>
               <p class="fp__note">Sous réserve de disponibilité, confirmée par KST AutoServices.</p>
               <div class="fp__foot">
@@ -913,7 +925,7 @@
             </a>
           </li>
           <li>
-            <a class="contact-card" href="#reservation" data-goto-step="4">
+            <a class="contact-card" href="#reservation" data-goto-step="5">
               <svg class="ico" aria-hidden="true"><use href="#i-cal"/></svg>
               <span class="contact-card__k">Formulaire</span>
               <span class="contact-card__v">Demande de devis</span>
@@ -1006,7 +1018,7 @@
   <!-- Sélection en cours (bureau) -->
   <div class="tray" data-tray hidden>
     <p data-tray-text></p>
-    <a class="btn btn--gold btn--sm" href="#reservation" data-goto-step="3">Poursuivre ma demande</a>
+    <a class="btn btn--gold btn--sm" href="#reservation" data-goto-step="4">Poursuivre ma demande</a>
   </div>
 
   <!-- Barre d'action mobile -->
@@ -1052,6 +1064,6 @@
     <p class="noscript">Le formulaire de devis nécessite JavaScript. Appelez-nous au <a href="tel:+33648480558">06 48 48 05 58</a> ou écrivez à <a href="mailto:contact@kstautoservices.com">contact@kstautoservices.com</a>.</p>
   </noscript>
 
-  <script src="assets/js/app.js?v=202610031713" defer></script>
+  <script src="assets/js/app.js?v=202610031935" defer></script>
 </body>
 </html>

@@ -27,6 +27,9 @@
   const STORE_KEY = 'kst-demande-v1';
   const WEB3FORMS_URL = 'https://api.web3forms.com/submit';
   const VIDEO_SRC = 'assets/img/Home/video-presentation.mp4';
+  const BAN_URL = 'https://api-adresse.data.gouv.fr/search/';   // Base Adresse Nationale (gratuite, sans clé)
+  const MAX_POINTS = 8;                                          // prise en charge + 7 étapes
+  const STEPS = 5;
 
   /* ---------- Utilitaires ---------- */
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -131,24 +134,34 @@
   /* ==========================================================================
      État & persistance
      ========================================================================== */
+  /* Un point du trajet : adresse saisie (ou libellé BAN), ville mémorisée, heure facultative.
+     trip[0] = prise en charge (son heure est state.time, choisie à l'étape 2). */
+  let ptSeq = 0;
+  const TIME_RE = /^\d{2}:\d{2}$/;
+  const newPoint = (o = {}) => ({ id: ++ptSeq, addr: str(o.addr, 160), city: str(o.city, 80), time: TIME_RE.test(o.time || '') ? o.time : '' });
+
   const DEFAULTS = () => ({
-    occasion: '', city: '', mode: 'single', start: '', end: '', time: '',
+    occasion: '', mode: 'single', start: '', end: '', time: '', trip: [newPoint()],
     vehicles: [], name: '', email: '', phone: '', message: '', edited: false
   });
   const state = DEFAULTS();
-  const CHOICE_KEYS = ['occasion', 'city', 'mode', 'start', 'end', 'time', 'vehicles'];
+  const CHOICE_KEYS = ['occasion', 'trip', 'mode', 'start', 'end', 'time', 'vehicles'];
 
   function restore() {
     const s = storage.get();
     if (!s || typeof s !== 'object') return;
     if (OCC[s.occasion]) state.occasion = s.occasion;
-    state.city = str(s.city, 80);
+    // Ancienne clé « city » (avant l'étape Trajet) : volontairement ignorée.
+    if (Array.isArray(s.trip)) {
+      const t = s.trip.filter(pt => pt && typeof pt === 'object').slice(0, MAX_POINTS).map(newPoint);
+      if (t.length) state.trip = t;
+    }
     if (s.mode === 'range') state.mode = 'range';
     if (isISO(s.start) && s.start >= TODAY) {
       state.start = s.start;
       if (state.mode === 'range' && isISO(s.end) && s.end > s.start) state.end = s.end;
     }
-    if (typeof s.time === 'string' && /^\d{2}:\d{2}$/.test(s.time)) state.time = s.time;
+    if (typeof s.time === 'string' && TIME_RE.test(s.time)) state.time = s.time;
     if (Array.isArray(s.vehicles)) state.vehicles = s.vehicles.filter((id, i, a) => vehicles[id] && a.indexOf(id) === i);
     state.name = str(s.name, 100);
     state.email = str(s.email, 120);
@@ -163,15 +176,27 @@
     if (!state.start) return '';
     return state.end ? `du ${rangeText(state.start, state.end)}` : `le ${longDate(state.start)}`;
   }
+  /* Trajet : adresse renseignée, libellé court (ville) et lignes du message */
+  const filledPts = () => state.trip.filter(pt => pt.addr.trim());
+  // Ville : celle de la suggestion BAN, sinon déduite de la saisie libre (« 77100 Meaux » ou dernier segment après une virgule)
+  const cityOf = pt => pt.city || ((pt.addr.match(/\b\d{5}\s+([^,]+?)\s*$/) || [])[1] || (pt.addr.includes(',') ? pt.addr.split(',').pop().trim() : ''));
+  const clip = (t, n) => (t.length > n ? t.slice(0, n - 1).trimEnd() + '…' : t);
+  const placeOf = pt => clip((cityOf(pt) || pt.addr).trim(), 34);
+  const stopLine = (pt, n) => `Étape ${n}${pt.time ? ' (' + timeLabel(pt.time) + ')' : ''} : ${pt.addr.trim()}`;
+  const stopLines = () => state.trip.slice(1).filter(pt => pt.addr.trim()).map((pt, k) => stopLine(pt, k + 2));
+
   function buildMessage() {
     let s = 'Bonjour, je souhaite une demande de devis pour ' + (OCC[state.occasion] ? OCC[state.occasion].phrase : 'une location de voiture de luxe');
     const d = dateClause();
     if (d) s += ' ' + d;
-    if (state.city.trim()) s += ' à ' + state.city.trim();
-    if (state.vehicles.length) s += ', avec ' + joinList(state.vehicles.map(id => 'la ' + vehicles[id].full));
-    s += ', avec chauffeur.';
-    if (state.time) s += ` Prise en charge souhaitée à ${timeLabel(state.time)}.`;
-    return s;
+    const lines = [s + '.'];
+    const first = state.trip[0], t0 = state.time ? timeLabel(state.time) : '';
+    if (first.addr.trim()) lines.push(`Prise en charge${t0 ? ' à ' + t0 : ''} : ${first.addr.trim()}.`);
+    else if (t0) lines.push(`Prise en charge souhaitée à ${t0}.`);
+    stopLines().forEach(l => lines.push(l + '.'));
+    const cars = state.vehicles.map(id => 'la ' + vehicles[id].full);
+    lines.push(cars.length ? `${cars.length > 1 ? 'Véhicules souhaités' : 'Véhicule souhaité'} : ${joinList(cars)}, avec chauffeur.` : 'Prestation avec chauffeur.');
+    return lines.join('\n');
   }
   function joinList(list) {
     if (list.length < 2) return list[0] || '';
@@ -179,12 +204,13 @@
   }
   const countText = n => (n === 0 ? 'Aucun véhicule sélectionné' : n === 1 ? '1 véhicule sélectionné' : `${n} véhicules sélectionnés`);
 
-  function update(patch) {
+  /* keepTrip : la saisie dans un champ d'adresse ne doit pas reconstruire la liste (le focus serait perdu). */
+  function update(patch, { keepTrip = false } = {}) {
     Object.assign(state, patch);
     const keys = Object.keys(patch);
     if (!state.edited && keys.some(k => CHOICE_KEYS.includes(k))) state.message = buildMessage();
     persist();
-    render(keys);
+    render(keys, keepTrip);
   }
 
   function resetState(keepContact) {
@@ -485,7 +511,7 @@
   const stepFill = $('[data-stepper-fill]', form);
   const resultEl = $('[data-result]', form);
   const f = {
-    city: $('#f-city'), time: $('#f-time'), name: $('#f-name'),
+    time: $('#f-time'), name: $('#f-name'),
     phone: $('#f-phone'), email: $('#f-email'), message: $('#f-message'),
     website: form.elements.website
   };
@@ -496,17 +522,18 @@
   let step = 1;
   let sending = false;
 
-  /* Heures de prise en charge : pas de 30 minutes */
-  (function buildTimes() {
-    let html = '<option value="">Non précisée</option>';
+  /* Heures : pas de 30 minutes (prise en charge à l'étape 2, heures facultatives des étapes du trajet) */
+  const timeOptions = sel => {
+    let html = `<option value=""${sel ? '' : ' selected'}>Non précisée</option>`;
     for (let m = 0; m < 24 * 60; m += 30) {
       const v = `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
-      html += `<option value="${v}">${pad(Math.floor(m / 60))}h${pad(m % 60)}</option>`;
+      html += `<option value="${v}"${v === sel ? ' selected' : ''}>${pad(Math.floor(m / 60))}h${pad(m % 60)}</option>`;
     }
-    f.time.innerHTML = html;
-  })();
+    return html;
+  };
+  f.time.innerHTML = timeOptions('');
 
-  /* Vignettes de l'étape 3 */
+  /* Vignettes de l'étape Véhicules */
   const tilesEl = $('[data-tiles]');
   tilesEl.innerHTML = order.map(id => {
     const v = vehicles[id], im = v.images[0];
@@ -662,6 +689,271 @@
   });
 
   /* ==========================================================================
+     Trajet : prise en charge + étapes (ajout, ordre, suppression)
+     et autocomplétion d'adresse (Base Adresse Nationale), saisie libre toujours possible
+     ========================================================================== */
+  const tripEl = $('[data-trip]');
+  const tripStatus = $('[data-trip-status]');
+  const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
+  const tripIco = id => `<svg class="ico" aria-hidden="true"><use href="#${id}"/></svg>`;
+  const tripSay = msg => { tripStatus.textContent = ''; setTimeout(() => { tripStatus.textContent = msg; }, 60); };
+  const tripErr = { on: false };
+  let tripNewId = 0;
+
+  function pointHTML(pt, i, n) {
+    const first = i === 0, last = n > 1 && i === n - 1, num = i + 1;
+    const addrId = `trip-addr-${pt.id}`, listId = `trip-list-${pt.id}`, errId = `trip-err-${pt.id}`;
+    const tools = first ? '' :
+      `<div class="trip__tools" role="group" aria-label="Actions pour l’étape ${num}">` +
+      `<button type="button" class="trip__tool" data-trip-up="${pt.id}" aria-label="Monter l’étape ${num}"${i === 1 ? ' disabled' : ''}>${tripIco('i-chev-u')}</button>` +
+      `<button type="button" class="trip__tool" data-trip-down="${pt.id}" aria-label="Descendre l’étape ${num}"${last ? ' disabled' : ''}>${tripIco('i-chev-d')}</button>` +
+      `<button type="button" class="trip__tool trip__tool--del" data-trip-del="${pt.id}" aria-label="Supprimer l’étape ${num}">${tripIco('i-trash')}</button>` +
+      '</div>';
+    const under = first
+      ? `<p class="trip__when">${tripIco('i-clock')}<span data-trip-when></span><button type="button" class="link" data-goto-step="2" data-focus="#f-time" data-trip-when-link></button></p>`
+      : `<div class="field trip__time"><label for="trip-time-${pt.id}">Heure <span class="opt">(facultatif)</span></label><select id="trip-time-${pt.id}" data-trip-time="${pt.id}">${timeOptions(pt.time)}</select></div>`;
+    return `<li class="trip__pt${pt.id === tripNewId ? ' is-new' : ''}">` +
+      `<span class="trip__dot" aria-hidden="true">${ROMAN[i] || num}</span>` +
+      '<div class="trip__main">' +
+      '<div class="trip__head"><div class="trip__titles">' +
+      `<label class="trip__kicker" for="${addrId}">${first ? 'Prise en charge <span class="req" aria-hidden="true">*</span><span class="vh"> : adresse</span>' : `Étape ${num}<span class="vh"> : adresse</span>`}</label>` +
+      (last ? '<span class="trip__tag">Arrivée</span>' : '') +
+      '</div>' +
+      tools +
+      '</div>' +
+      '<div class="field trip__field"><div class="combo">' +
+      `<input class="trip__input" id="${addrId}" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="${listId}" ` +
+      `autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="next" maxlength="160" placeholder="Numéro, rue, ville" ` +
+      `data-trip-addr="${pt.id}" value="${esc(pt.addr)}"${first ? ` aria-required="true" aria-describedby="${errId}"` : ''}>` +
+      `<ul class="combo__list" id="${listId}" role="listbox" aria-label="Suggestions d’adresses" hidden></ul>` +
+      '</div>' +
+      (first ? `<p class="field__error" id="${errId}" data-trip-error hidden></p>` : '') +
+      '</div>' +
+      under +
+      '</div></li>';
+  }
+
+  function renderTrip() {
+    const n = state.trip.length;
+    const full = n >= MAX_POINTS;
+    tripEl.innerHTML = state.trip.map((pt, i) => pointHTML(pt, i, n)).join('') +
+      '<li class="trip__addrow" role="presentation">' +
+      `<button type="button" class="trip__add" data-trip-add${full ? ' disabled' : ''}>` +
+      `<span class="trip__dot trip__dot--add" aria-hidden="true">${tripIco('i-plus')}</span>` +
+      `<span>${full ? 'Nombre maximal d’étapes atteint' : 'Ajouter une étape'}</span></button></li>`;
+    tripNewId = 0;
+    acReset();
+    renderTripWhen();
+    if (tripErr.on) setTripError(true);
+  }
+
+  /* Rappel de l'heure choisie à l'étape 2, sous la prise en charge */
+  function renderTripWhen() {
+    const el = $('[data-trip-when]', tripEl);
+    if (!el) return;
+    const link = $('[data-trip-when-link]', tripEl);
+    el.textContent = state.time ? `Prise en charge à ${timeLabel(state.time)}` : 'Heure de prise en charge non précisée';
+    link.textContent = state.time ? 'Modifier' : 'Préciser';
+    link.setAttribute('aria-label', state.time ? 'Modifier l’heure de prise en charge' : 'Préciser l’heure de prise en charge');
+  }
+
+  function setTripError(on) {
+    tripErr.on = on;
+    const input = $('[data-trip-addr]', tripEl), box = $('[data-trip-error]', tripEl);
+    if (!input || !box) return;
+    box.textContent = on ? 'Indiquez l’adresse de prise en charge pour continuer.' : '';
+    box.hidden = !on;
+    if (on) input.setAttribute('aria-invalid', 'true'); else input.removeAttribute('aria-invalid');
+  }
+  function checkPickup() {
+    const ok = !!state.trip[0].addr.trim();
+    setTripError(!ok);
+    return ok;
+  }
+
+  function setPoint(id, patch) {
+    update({ trip: state.trip.map(pt => (pt.id === id ? { ...pt, ...patch } : pt)) }, { keepTrip: true });
+  }
+
+  function onTripInput(input) {
+    setPoint(Number(input.dataset.tripAddr), { addr: input.value, city: '' });
+    if (tripErr.on && state.trip[0].addr.trim()) setTripError(false);
+    acSchedule(input);
+  }
+
+  function addStop() {
+    if (state.trip.length >= MAX_POINTS) return;
+    const pt = newPoint();
+    tripNewId = pt.id;
+    update({ trip: [...state.trip, pt] });
+    const input = $(`#trip-addr-${pt.id}`);
+    if (input) input.focus();
+    tripSay(`Étape ${state.trip.length} ajoutée. Saisissez son adresse.`);
+  }
+
+  function removeStop(id) {
+    const i = state.trip.findIndex(pt => pt.id === id);
+    if (i < 1) return;
+    update({ trip: state.trip.filter(pt => pt.id !== id) });
+    const next = $$('[data-trip-addr]', tripEl)[Math.min(i, state.trip.length - 1)];
+    if (next) next.focus();
+    tripSay(`Étape ${i + 1} supprimée. Le trajet compte maintenant ${state.trip.length} ${state.trip.length > 1 ? 'adresses' : 'adresse'}.`);
+  }
+
+  function moveStop(id, d) {
+    const i = state.trip.findIndex(pt => pt.id === id), j = i + d;
+    if (i < 1 || j < 1 || j >= state.trip.length) return;
+    const list = state.trip.slice();
+    [list[i], list[j]] = [list[j], list[i]];
+    update({ trip: list });
+    const same = $(`[data-trip-${d < 0 ? 'up' : 'down'}="${id}"]`, tripEl);
+    const other = $(`[data-trip-${d < 0 ? 'down' : 'up'}="${id}"]`, tripEl);
+    const target = same && !same.disabled ? same : other;
+    if (target) target.focus();
+    tripSay(`Étape déplacée : elle devient l’étape ${j + 1}.`);
+  }
+
+  tripEl.addEventListener('click', e => {
+    const t = e.target;
+    let el;
+    if (t.closest('[data-trip-add]')) { addStop(); return; }
+    if ((el = t.closest('[data-trip-del]'))) { removeStop(Number(el.dataset.tripDel)); return; }
+    if ((el = t.closest('[data-trip-up]'))) { moveStop(Number(el.dataset.tripUp), -1); return; }
+    if ((el = t.closest('[data-trip-down]'))) { moveStop(Number(el.dataset.tripDown), 1); return; }
+    if ((el = t.closest('.combo__opt'))) acPick(Number(el.dataset.i));
+  });
+
+  /* ---------- Autocomplétion (combobox ARIA) ---------- */
+  const ac = { input: null, list: null, items: [], idx: -1, ctl: null, timer: 0, token: 0, cache: new Map() };
+
+  function acHide() {
+    clearTimeout(ac.timer);
+    ac.token++;
+    if (ac.ctl) { ac.ctl.abort(); ac.ctl = null; }
+    if (ac.input) { ac.input.setAttribute('aria-expanded', 'false'); ac.input.removeAttribute('aria-activedescendant'); }
+    if (ac.list) { ac.list.hidden = true; ac.list.innerHTML = ''; }
+    ac.items = [];
+    ac.idx = -1;
+  }
+  function acReset() { acHide(); ac.input = null; ac.list = null; }
+  const acOpen = () => !!ac.list && !ac.list.hidden && ac.items.length > 0;
+
+  function acSchedule(input) {
+    if (ac.input && ac.input !== input) acHide();
+    ac.input = input;
+    ac.list = $('.combo__list', input.parentElement);
+    clearTimeout(ac.timer);
+    const q = input.value.trim();
+    if (q.length < 3) { acHide(); return; }
+    ac.timer = setTimeout(() => acFetch(input, q), 250);
+  }
+
+  /* Aucune erreur affichée si l'API ne répond pas : la liste reste simplement fermée. */
+  async function acFetch(input, q) {
+    const token = ++ac.token;
+    if (ac.ctl) ac.ctl.abort();
+    const key = q.toLowerCase();
+    let found = ac.cache.get(key);
+    if (!found) {
+      const ctl = new AbortController();
+      ac.ctl = ctl;
+      const kill = setTimeout(() => ctl.abort(), 6000);
+      try {
+        const res = await fetch(`${BAN_URL}?q=${encodeURIComponent(q.slice(0, 200))}&limit=5&autocomplete=1`, { signal: ctl.signal });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        found = (Array.isArray(json.features) ? json.features : [])
+          .map(ft => ft && ft.properties)
+          .filter(pr => pr && typeof pr.label === 'string' && pr.label)
+          .map(pr => ({
+            label: str(pr.label, 160),
+            city: str(pr.city, 80),
+            name: str(pr.name, 120) || str(pr.label, 120),
+            ctx: [pr.postcode, pr.city].filter(v => typeof v === 'string' && v).join(' ')
+          }));
+        if (ac.cache.size > 40) ac.cache.clear();
+        ac.cache.set(key, found);
+      } catch (err) {
+        if (token === ac.token) acHide();
+        return;
+      } finally {
+        clearTimeout(kill);
+      }
+    }
+    if (token !== ac.token || document.activeElement !== input || !found.length) { if (token === ac.token) acHide(); return; }
+    acShow(input, found);
+  }
+
+  function acShow(input, found) {
+    const list = ac.list;
+    ac.items = found;
+    ac.idx = -1;
+    list.innerHTML = found.map((r, i) =>
+      `<li class="combo__opt" role="option" id="${list.id}-o${i}" aria-selected="false" data-i="${i}">` +
+      `<span class="combo__main">${esc(r.name)}</span>${r.ctx ? `<span class="combo__sub">${esc(r.ctx)}</span>` : ''}</li>`
+    ).join('');
+    list.hidden = false;
+    input.setAttribute('aria-expanded', 'true');
+    tripSay(`${found.length} ${found.length > 1 ? 'suggestions' : 'suggestion'} d’adresse. Utilisez les flèches haut et bas, puis Entrée.`);
+  }
+
+  function acMove(d) {
+    const n = ac.items.length;
+    if (!n) return;
+    ac.idx = ac.idx < 0 ? (d > 0 ? 0 : n - 1) : (ac.idx + d + n) % n;
+    $$('.combo__opt', ac.list).forEach((li, i) => {
+      const on = i === ac.idx;
+      li.setAttribute('aria-selected', String(on));
+      if (on) { ac.input.setAttribute('aria-activedescendant', li.id); li.scrollIntoView({ block: 'nearest' }); }
+    });
+  }
+
+  function acPick(i) {
+    const r = ac.items[i], input = ac.input;
+    if (!r || !input) return;
+    input.value = r.label;
+    acHide();
+    setPoint(Number(input.dataset.tripAddr), { addr: r.label, city: r.city });
+    if (tripErr.on && state.trip[0].addr.trim()) setTripError(false);
+    tripSay(`Adresse choisie : ${r.label}.`);
+  }
+
+  tripEl.addEventListener('keydown', e => {
+    const input = e.target.closest('[data-trip-addr]');
+    if (!input) return;
+    if (input !== ac.input) { ac.input = input; ac.list = $('.combo__list', input.parentElement); }
+    switch (e.key) {
+      case 'ArrowDown':
+      case 'ArrowUp':
+        if (acOpen()) { e.preventDefault(); acMove(e.key === 'ArrowDown' ? 1 : -1); }
+        else if (e.key === 'ArrowDown' && input.value.trim().length >= 3) { e.preventDefault(); clearTimeout(ac.timer); acFetch(input, input.value.trim()); }
+        break;
+      case 'Enter':
+        if (acOpen()) { e.preventDefault(); if (ac.idx >= 0) acPick(ac.idx); else acHide(); }
+        break;
+      case 'Escape':
+        if (acOpen()) { e.preventDefault(); e.stopPropagation(); acHide(); }
+        break;
+      default:
+    }
+  });
+  // Un clic dans la liste ne doit pas retirer le focus du champ.
+  tripEl.addEventListener('mousedown', e => { if (e.target.closest('.combo__list')) e.preventDefault(); });
+  tripEl.addEventListener('focusout', e => { if (e.target.matches && e.target.matches('[data-trip-addr]')) acHide(); });
+
+  /* Occasion : le premier choix, fait à la souris ou au toucher, passe à l'étape suivante.
+     Pas d'avance automatique au clavier (les flèches changent le choix) ni quand une occasion
+     est déjà choisie (retour pour modifier : on reste sur place). */
+  let occTimer = 0;
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.occ__card') || e.detail === 0 || occTimer || state.occasion) return;
+    occTimer = setTimeout(() => {
+      occTimer = 0;
+      if (step === 1 && state.occasion) goStep(2, { scroll: 'auto' });
+    }, 350);
+  });
+
+  /* ==========================================================================
      Rendu de l'interface d'après l'état
      ========================================================================== */
   const recapEl = $('[data-recap]');
@@ -685,9 +977,34 @@
     el.classList.toggle('is-empty', !val);
   }
 
+  /* Mini-trajet du faire-part : « à Meaux », « Meaux — Paris — Chelles » ou « Meaux · 3 adresses » */
+  function routeHTML() {
+    const pts = filledPts();
+    if (!pts.length) return '';
+    const names = [];
+    pts.forEach(pt => { const nm = placeOf(pt); if (nm && names[names.length - 1] !== nm) names.push(nm); });
+    if (pts.length === 1) return `<span>${esc(names[0])}</span>`;
+    if (names.length === 1) return `<span>${esc(names[0])}</span><span class="fp__cnt">${pts.length} adresses</span>`;
+    const shown = names.length > 3 ? [names[0], '…', names[names.length - 1]] : names;
+    return shown.map(n => `<span>${esc(n)}</span>`).join('<span class="vh">, puis </span><i class="fp__sep" aria-hidden="true"></i>');
+  }
+
+  function renderRoute() {
+    const el = $('[data-r="route"]', recapEl);
+    const html = routeHTML();
+    const next = html || 'Votre trajet';
+    if (el.dataset.k !== next) {
+      el.dataset.k = next;
+      if (html) el.innerHTML = html; else el.textContent = next;
+      if (html && inBooking) { el.classList.remove('fp-in'); void el.offsetWidth; el.classList.add('fp-in'); }
+    }
+    el.classList.toggle('is-empty', !html);
+    el.classList.toggle('is-single', filledPts().length === 1);
+  }
+
   function renderRecap() {
     setR('occasion', OCC[state.occasion] ? OCC[state.occasion].label : '', 'Votre occasion');
-    setR('city', state.city.trim(), 'Ville de l’événement');
+    renderRoute();
     setR('date', dateSummary(), 'La date de votre événement');
     $('[data-r="vehicles"]', recapEl).innerHTML = state.vehicles.length
       ? state.vehicles.map(id => `<li><span>${esc(vehicles[id].full)}</span><button type="button" class="recap__x" data-remove="${id}" aria-label="Retirer ${esc(vehicles[id].full)} de ma demande"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button></li>`).join('')
@@ -719,9 +1036,10 @@
   function renderMini() {
     const items = [];
     if (OCC[state.occasion]) items.push([1, OCC[state.occasion].icon, OCC[state.occasion].label]);
-    if (state.city.trim()) items.push([1, 'i-pin', state.city.trim()]);
     if (state.start) items.push([2, 'i-cal', dateSummary()]);
-    if (state.vehicles.length) items.push([3, 'i-wheel', state.vehicles.length === 1 ? vehicles[state.vehicles[0]].full : `${state.vehicles.length} véhicules`]);
+    const pts = filledPts();
+    if (pts.length) items.push([3, 'i-pin', placeOf(pts[0]) + (pts.length > 1 ? ` · ${pts.length} adresses` : '')]);
+    if (state.vehicles.length) items.push([4, 'i-wheel', state.vehicles.length === 1 ? vehicles[state.vehicles[0]].full : `${state.vehicles.length} véhicules`]);
     $('[data-mini-recap]', form).innerHTML = items.map(([s, ico, text]) =>
       `<button type="button" class="mini" data-goto-step="${s}"><svg class="ico" aria-hidden="true"><use href="#${ico}"/></svg>${esc(text)}</button>`
     ).join('');
@@ -732,7 +1050,6 @@
   function renderFields() {
     $$('input[name="occasion"]', form).forEach(i => { i.checked = i.value === state.occasion; });
     $$('input[name="mode"]', form).forEach(i => { i.checked = i.value === state.mode; });
-    setVal(f.city, state.city);
     setVal(f.time, state.time);
     if (f.time.value !== state.time) f.time.value = '';
     setVal(f.name, state.name);
@@ -744,10 +1061,11 @@
     whatsappLinks.forEach(a => { a.href = CONTACT.wa + (text ? `?text=${encodeURIComponent(text)}` : ''); });
   }
 
-  const stepDone = n => (n === 1 ? !!(state.occasion || state.city.trim())
+  const stepDone = n => (n === 1 ? !!state.occasion
     : n === 2 ? !!state.start
-      : n === 3 ? state.vehicles.length > 0
-        : !!(state.name.trim() && state.email.trim() && state.phone.trim()));
+      : n === 3 ? !!state.trip[0].addr.trim()
+        : n === 4 ? state.vehicles.length > 0
+          : !!(state.name.trim() && state.email.trim() && state.phone.trim()));
 
   function renderStepper() {
     stepBtns.forEach(b => {
@@ -755,13 +1073,15 @@
       b.dataset.done = String(stepDone(n));
       if (n === step) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
     });
-    stepFill.style.width = `${step * 25}%`;
+    stepFill.style.width = `${step * (100 / STEPS)}%`;
   }
 
-  function render(keys) {
+  function render(keys, keepTrip) {
     const has = (...k) => !keys || k.some(x => keys.includes(x));
     if (has('vehicles')) { renderFleet(); renderTiles(); renderCounts(); renderTray(); }
     if (has('mode', 'start', 'end')) renderCalendar();
+    if (has('trip') && !keepTrip) renderTrip();
+    renderTripWhen();
     renderFields();
     renderRecap();
     renderMini();
@@ -778,8 +1098,15 @@
     resultEl.hidden = true;
   }
 
-  function goStep(n, { scroll = false, focus = true } = {}) {
-    n = Math.min(4, Math.max(1, Number(n) || 1));
+  /* gate : depuis l'étape Trajet, on n'avance pas sans adresse de prise en charge */
+  function goStep(n, { scroll = false, focus = true, gate = false } = {}) {
+    n = Math.min(STEPS, Math.max(1, Number(n) || 1));
+    if (gate && step === 3 && n > 3 && !checkPickup()) {
+      const input = $('[data-trip-addr]', tripEl);
+      if (input) input.focus();
+      announce('Indiquez l’adresse de prise en charge pour continuer.');
+      return;
+    }
     hideResult();
     const back = n < step;
     step = n;
@@ -799,7 +1126,7 @@
     }
   }
 
-  const firstIncompleteBeforeSend = () => (!state.occasion ? 1 : !state.start ? 2 : 4);
+  const firstIncompleteBeforeSend = () => (!state.occasion ? 1 : !state.start ? 2 : !state.trip[0].addr.trim() ? 3 : 5);
 
   /* ==========================================================================
      Validation & envoi
@@ -849,7 +1176,8 @@
       telephone: f.phone.value.trim(),
       message: f.message.value.trim(),
       occasion: OCC[state.occasion] ? OCC[state.occasion].label : '',
-      ville: state.city.trim(),
+      priseEnCharge: state.trip[0].addr.trim(),
+      etapes: stopLines().join('\n'),
       date: state.start ? (state.end ? `Du ${rangeText(state.start, state.end)}` : longDate(state.start)) : '',
       heure: state.time ? timeLabel(state.time) : '',
       vehicules: state.vehicles.map(id => vehicles[id].full).join(', ')
@@ -860,11 +1188,12 @@
     return `Demande de devis KST AutoServices${d.occasion ? ' – ' + d.occasion : ''}${d.date ? ' – ' + d.date : ''}`;
   }
   function mailBody(d) {
-    const lines = [d.message, '', '—', `Nom : ${d.nom}`, `Téléphone : ${d.telephone}`, `E-mail : ${d.email}`];
+    const lines = [d.message.replace(/\r?\n/g, '\r\n'), '', '—', `Nom : ${d.nom}`, `Téléphone : ${d.telephone}`, `E-mail : ${d.email}`];
     if (d.occasion) lines.push(`Occasion : ${d.occasion}`);
-    if (d.ville) lines.push(`Ville de l'événement : ${d.ville}`);
     if (d.date) lines.push(`Date : ${d.date}`);
     if (d.heure) lines.push(`Heure de prise en charge : ${d.heure}`);
+    if (d.priseEnCharge) lines.push(`Prise en charge : ${d.priseEnCharge}`);
+    if (d.etapes) d.etapes.split('\n').forEach(l => lines.push(l));
     if (d.vehicules) lines.push(`Véhicules : ${d.vehicules}`);
     return lines.join('\r\n');
   }
@@ -933,9 +1262,10 @@
       telephone: d.telephone,
       message: d.message,
       occasion: d.occasion,
-      ville: d.ville,
       date_evenement: d.date,
       heure_prise_en_charge: d.heure,
+      prise_en_charge: d.priseEnCharge,
+      etapes: d.etapes,
       vehicules: d.vehicules
     };
     setLoading(true);
@@ -967,7 +1297,7 @@
 
   form.addEventListener('submit', e => {
     e.preventDefault();
-    if (step !== 4) { goStep(step + 1, { scroll: 'auto' }); return; }
+    if (step !== STEPS) { goStep(step + 1, { scroll: 'auto', gate: true }); return; }
     if (sending) return;
 
     const errors = Object.keys(FIELDS).filter(k => validateField(k));
@@ -981,6 +1311,16 @@
       return;
     }
     clearAlert();
+
+    // La prise en charge est indispensable pour établir un devis : retour à l'étape Trajet si elle manque.
+    if (!state.trip[0].addr.trim()) {
+      goStep(3, { scroll: 'auto', focus: false });
+      checkPickup();
+      const input = $('[data-trip-addr]', tripEl);
+      if (input) input.focus();
+      announce('Indiquez l’adresse de prise en charge pour continuer.');
+      return;
+    }
 
     // Honeypot : un robot a rempli le champ caché, on simule un succès sans rien envoyer.
     if (f.website && f.website.value) {
@@ -1079,7 +1419,7 @@
 
     if ((el = hit('[data-remove]'))) {
       toggleVehicle(el.dataset.remove, false);
-      const next = $('[data-r="vehicles"] .recap__x', recapEl) || $('.fp__edit [data-goto-step="3"]', recapEl);
+      const next = $('[data-r="vehicles"] .recap__x', recapEl) || $('.fp__edit [data-goto-step="4"]', recapEl);
       if (next) next.focus({ preventScroll: true });
       return;
     }
@@ -1093,9 +1433,9 @@
       return;
     }
 
-    if (hit('[data-next]')) { goStep(step + 1, { scroll: 'auto' }); return; }
+    if (hit('[data-next]')) { goStep(step + 1, { scroll: 'auto', gate: true }); return; }
     if (hit('[data-prev]')) { goStep(step - 1, { scroll: 'auto' }); return; }
-    if ((el = hit('[data-step-btn]'))) { goStep(el.dataset.stepBtn, { scroll: 'auto' }); return; }
+    if ((el = hit('[data-step-btn]'))) { goStep(el.dataset.stepBtn, { scroll: 'auto', gate: true }); return; }
 
     if (hit('[data-recap-open]')) { openRecap(); return; }
     if (hit('[data-recap-close]') || hit('[data-recap-backdrop]')) { closeOverlay(recapEl); return; }
@@ -1126,7 +1466,7 @@
 
     if ((el = hit('[data-result-action]'))) {
       const action = el.dataset.resultAction;
-      if (action === 'edit') goStep(4, { scroll: 'auto' });
+      if (action === 'edit') goStep(STEPS, { scroll: 'auto' });
       else if (action === 'new') goStep(1, { scroll: true });
       else if (action === 'copy') {
         const d = collect();
@@ -1152,8 +1492,9 @@
   /* Saisies des champs */
   /* On relit tous les champs texte à chaque saisie : l'autoremplissage du navigateur
      modifie plusieurs champs d'un coup, aucun ne doit être écrasé par l'état. */
-  const TEXT_FIELDS = { city: f.city, name: f.name, phone: f.phone, email: f.email };
+  const TEXT_FIELDS = { name: f.name, phone: f.phone, email: f.email };
   form.addEventListener('input', e => {
+    if (e.target.matches('[data-trip-addr]')) { onTripInput(e.target); return; }
     const patch = {};
     Object.entries(TEXT_FIELDS).forEach(([key, el]) => { if (el.value !== state[key]) patch[key] = el.value; });
     if (e.target === f.message) {
@@ -1168,6 +1509,7 @@
     if (t.name === 'occasion') update({ occasion: t.value });
     else if (t.name === 'mode') update(t.value === 'range' ? { mode: 'range' } : { mode: 'single', end: '' });
     else if (t === f.time) update({ time: t.value });
+    else if (t.matches('[data-trip-time]')) setPoint(Number(t.dataset.tripTime), { time: t.value });
     else if (t.name === 'vehicule') toggleVehicle(t.value, t.checked);
   });
 
