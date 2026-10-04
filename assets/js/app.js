@@ -21,7 +21,7 @@
   const CONTACT = {
     email: 'contact@kstautoservices.com',
     tel: '+33648480558',
-    telHuman: '06 48 48 05 58',
+    telHuman: '06.48.48.05.58',
     wa: 'https://wa.me/33648480558'
   };
   const STORE_KEY = 'kst-demande-v1';
