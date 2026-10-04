@@ -3146,3 +3146,31 @@ html.is-splash .splash { background: #f4efe6; }
   40%  { filter: grayscale(0) sepia(0) brightness(1.3) drop-shadow(0 0 12px rgba(232, 170, 40, .95)); transform: scale(1.22); }
   100% { filter: grayscale(0) sepia(0) brightness(1) drop-shadow(0 0 0 rgba(232, 170, 40, 0)); transform: scale(1); }
 }
+
+/* ==========================================================================
+   Splash plus rapide (≈ 2,3 s au lieu de 3,2 s) : logo, étoiles et rideaux enchaînés plus vite
+   ========================================================================== */
+html.is-splash .splash { animation-delay: 2.15s; }
+.splash-logo { animation-duration: .5s; animation-delay: .05s; }
+.splash-tagline { animation-duration: .55s; animation-delay: .4s; }
+.splash-star { animation-duration: .32s; }
+.splash-star:nth-child(2) { animation-delay: .34s; }
+.splash-star:nth-child(3) { animation-delay: .41s; }
+.splash-star:nth-child(4) { animation-delay: .48s; }
+.splash-star:nth-child(5) { animation-delay: .55s; }
+.splash-star:nth-child(6) { animation-delay: .62s; }
+.splash-panel::after { animation-delay: 1.2s; }
+.splash-panel--top, .splash-panel--bottom { animation-duration: .6s; animation-delay: 1.4s; }
+.splash-stage { animation-delay: 1.35s; }
+html.is-splash .hero__eyebrow { animation-delay: 1.65s; }
+html.is-splash .hero__title .line:nth-child(1) > span { animation-delay: 1.75s; }
+html.is-splash .hero__title .line:nth-child(2) > span { animation-delay: 1.89s; }
+html.is-splash .hero__title .line:nth-child(3) > span { animation-delay: 2.03s; }
+html.is-splash .hero__title em { animation-delay: 3.2s; }
+
+/* Mention « n photos » des cartes véhicules : en blanc, lisible sur toutes les photos */
+.vcard .vcard__photos {
+  color: #fff;
+  font-weight: 500;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, .75), 0 0 2px rgba(0, 0, 0, .5);
+}

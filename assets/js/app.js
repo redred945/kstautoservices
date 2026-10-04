@@ -70,7 +70,7 @@
     if (door) door.addEventListener('animationend', e => {
       if (e.animationName === 'splash-open-down') finish();
     });
-    setTimeout(finish, 3400);
+    setTimeout(finish, 2600);
   })();
 
   const storage = {
@@ -1420,11 +1420,11 @@
     calViewFromState();
     render();
     showResult({
-      title: 'Votre demande est envoyée',
-      text: 'Merci. Votre demande a bien été transmise à KST Auto Loc’. Sous réserve de disponibilité, confirmée par KST Auto Loc’.',
+      title: 'Votre demande a bien été envoyée',
+      text: 'Merci de votre confiance : KST Auto Loc’ a bien reçu votre demande et vous recontacte au plus vite pour établir votre devis. Sous réserve de disponibilité.',
       buttons: BTN.fresh + BTN.call
     });
-    announce('Votre demande a bien été envoyée.');
+    announce('Votre demande a bien été envoyée. KST Auto Loc vous recontacte au plus vite.');
   }
 
   function viaMailto(d) {
