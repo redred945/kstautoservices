@@ -3009,3 +3009,39 @@ html.is-splash .splash {
 }
 .trip__time--main.is-error { border-color: #b4483a; background: linear-gradient(90deg, rgba(180, 72, 58, .08), rgba(180, 72, 58, .02)); }
 .trip__time--main .field__error, [data-time-error] { margin-top: .5rem; color: #a3392a; }
+
+/* ==========================================================================
+   Splash sur fond crème — logo plus grand, en pleine résolution (888 px d'origine),
+   rideaux ivoire, étoiles qui s'allument en or sur sable clair
+   ========================================================================== */
+html.is-splash .splash { background: #f4efe6; }
+.splash-panel {
+  background: radial-gradient(120% 90% at 50% 100%, #fcfaf5, #f4efe6 62%);
+}
+.splash-panel--bottom {
+  background: radial-gradient(120% 90% at 50% 0%, #fcfaf5, #f4efe6 62%);
+}
+.splash-panel::after {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #a8853f 28%, #d9bf82 50%, #a8853f 72%, transparent);
+}
+.splash-logo { width: min(480px, 80vw); }
+.splash-logo::before {
+  inset: -22% -18%;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, .95), rgba(255, 255, 255, .55) 55%, transparent);
+}
+.splash-logo > img:first-child { filter: drop-shadow(0 12px 22px rgba(26, 23, 18, .2)); }
+.splash-line { width: min(240px, 56vw); height: 2px; background: rgba(122, 95, 39, .22); }
+.splash-caption {
+  font-size: .86rem;
+  font-weight: 600;
+  letter-spacing: .5em;
+  color: #6b5220;
+}
+.splash-stage { gap: 1.6rem; }
+.splash-star { animation-name: splash-star-on-light; }
+@keyframes splash-star-on-light {
+  0%   { opacity: 0; transform: scale(2); filter: drop-shadow(0 0 16px rgba(217, 160, 40, 1)); }
+  55%  { opacity: 1; transform: scale(.93); filter: brightness(1.18) drop-shadow(0 0 14px rgba(232, 170, 40, .95)); }
+  100% { opacity: 1; transform: none; filter: drop-shadow(0 0 7px rgba(201, 164, 92, .6)); }
+}
