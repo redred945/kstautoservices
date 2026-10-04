@@ -3092,3 +3092,17 @@ html.is-splash .splash { background: #f4efe6; }
 .booking .field input::placeholder, .booking .field textarea::placeholder { color: rgba(26, 23, 18, .5); }
 .trip__time--main { max-width: 380px; }
 .trip__pt--end .trip__dot .ico { color: #e8d29a; stroke-width: 1.8; }
+
+/* Splash : image du client (logo + « Location de voiture de luxe pour tous vos événements »),
+   étoiles allumées une à une ; la ligne de texte est un fichier à part pour garder un logo grand sur mobile */
+.splash-logo { width: min(460px, 76vw); }
+.splash-tagline {
+  display: block;
+  width: min(940px, 94vw);
+  height: auto;
+  opacity: 0;
+  transform: translateY(8px);
+  animation: splash-tag-in .8s var(--ease-out) .75s forwards;
+}
+@keyframes splash-tag-in { to { opacity: 1; transform: none; } }
+.splash-stage { gap: clamp(1.1rem, 3.4vw, 1.8rem); }
