@@ -343,12 +343,6 @@
     if (!top) return;
     if (e.key === 'Escape') { e.preventDefault(); closeOverlay(top.el); }
     else if (e.key === 'Tab') trapTab(e, top.el);
-    else if (top.el === lb.el) {
-      if (e.key === 'ArrowLeft') { e.preventDefault(); lbStep(-1); }
-      else if (e.key === 'ArrowRight') { e.preventDefault(); lbStep(1); }
-      else if (e.key === 'Home') { e.preventDefault(); lbShow(0); }
-      else if (e.key === 'End') { e.preventDefault(); lbShow(lb.list.length - 1); }
-    }
   });
 
   /* ==========================================================================
@@ -460,79 +454,6 @@
         : fleetSummaryDefault;
     }
   }
-
-  /* ==========================================================================
-     Galerie plein écran
-     ========================================================================== */
-  const lb = {
-    el: $('[data-lightbox]'),
-    img: $('[data-lb-img]'),
-    title: $('[data-lb-title]'),
-    count: $('[data-lb-count]'),
-    thumbs: $('[data-lb-thumbs]'),
-    chips: $('[data-lb-chips]'),
-    stage: $('[data-lb-stage]'),
-    id: null, list: [], i: 0, token: 0
-  };
-
-  function vehicleChips(v) {
-    const ico = id => `<svg class="ico" aria-hidden="true"><use href="#${id}"/></svg>`;
-    return (v.type ? `<li>${esc(v.type)}</li>` : '') +
-      `<li>${ico('i-seat')}5 places</li><li>${ico('i-bag')}1 bagage</li><li>${ico('i-wheel')}Avec chauffeur</li>`;
-  }
-
-  function openGallery(id, index = 0, opener) {
-    const v = vehicles[id];
-    if (!v) return;
-    lb.id = id;
-    lb.list = v.images;
-    lb.title.textContent = v.full;
-    lb.chips.innerHTML = vehicleChips(v);
-    lb.thumbs.innerHTML = v.images.map((im, i) =>
-      `<li><button type="button" data-lb-thumb="${i}" aria-label="Photo ${i + 1} sur ${v.images.length}"><img src="${esc(im.src)}" alt="" width="156" height="104" loading="lazy" decoding="async"></button></li>`
-    ).join('');
-    const multi = v.images.length > 1;
-    $('[data-lb-prev]', lb.el).hidden = !multi;
-    $('[data-lb-next]', lb.el).hidden = !multi;
-    lb.thumbs.hidden = !multi;
-    lb.img.classList.remove('is-swapping');
-    lbShow(index, true);
-    openOverlay(lb.el, { opener, initialFocus: $('[data-lb-close]', lb.el) });
-  }
-
-  function lbShow(i, instant) {
-    const n = lb.list.length;
-    lb.i = (i + n) % n;
-    const im = lb.list[lb.i];
-    const token = ++lb.token;
-    lb.count.textContent = `Photo ${lb.i + 1} sur ${n}`;
-    $$('[data-lb-thumb]', lb.thumbs).forEach((b, k) => b.setAttribute('aria-current', String(k === lb.i)));
-    const apply = () => {
-      if (token !== lb.token) return;
-      lb.img.src = im.src;
-      lb.img.alt = im.alt;
-      requestAnimationFrame(() => lb.img.classList.remove('is-swapping'));
-    };
-    if (instant) { apply(); } else {
-      lb.img.classList.add('is-swapping');
-      const pre = new Image();
-      pre.onload = pre.onerror = apply;
-      pre.src = im.src;
-    }
-    // précharge la suivante
-    if (n > 1) new Image().src = lb.list[(lb.i + 1) % n].src;
-  }
-  const lbStep = d => { if (lb.list.length > 1) lbShow(lb.i + d); };
-
-  let swipeX = null, swipeY = null;
-  lb.stage.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') { swipeX = e.clientX; swipeY = e.clientY; } });
-  lb.stage.addEventListener('pointerup', e => {
-    if (swipeX === null) return;
-    const dx = e.clientX - swipeX, dy = e.clientY - swipeY;
-    swipeX = null;
-    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.3) lbStep(dx < 0 ? 1 : -1);
-  });
-  lb.stage.addEventListener('pointercancel', () => { swipeX = null; });
 
   /* ==========================================================================
      Vidéo d'ambiance du hero (boucle sans son, chargée après le premier affichage)
@@ -1609,25 +1530,6 @@
 
     if ((el = hit('[data-toggle-vehicle]'))) { toggleVehicle(el.closest('[data-vehicle]').dataset.vehicle); return; }
 
-    if ((el = hit('[data-open-gallery]'))) {
-      const card = el.closest('[data-vehicle]');
-      if (card) openGallery(card.dataset.vehicle, 0, $('.vcard__actions [data-open-gallery]', card) || el);
-      return;
-    }
-    if (hit('[data-lb-close]')) { closeOverlay(lb.el); return; }
-    if (hit('[data-lb-prev]')) { lbStep(-1); return; }
-    if (hit('[data-lb-next]')) { lbStep(1); return; }
-    if ((el = hit('[data-lb-thumb]'))) { lbShow(Number(el.dataset.lbThumb)); return; }
-    if (hit('[data-lb-book]')) {
-      const id = lb.id;
-      closeOverlay(lb.el, { restore: false });
-      if (!state.vehicles.includes(id)) toggleVehicle(id, true);
-      // Étapes obligatoires d'abord ; sinon le forfait s'il n'est pas encore choisi, puis les coordonnées
-      const s = firstIncompleteBeforeSend();
-      goStep(s === 6 && !state.forfait ? 5 : s, { scroll: true });
-      return;
-    }
-
     if ((el = hit('[data-cinema-open]'))) { openCinema(el); return; }
     if (hit('[data-cinema-close]')) { closeOverlay(cinema); return; }
 
@@ -1862,6 +1764,25 @@
   goStep(1, { focus: false });
   trayEl.hidden = false;
   $$('[data-year]').forEach(el => { el.textContent = String(new Date().getFullYear()); });
+
+  /* Arrivée depuis une page véhicule : /?vehicule=<id>#reservation
+     Le véhicule est ajouté à la demande, puis le visiteur est amené au formulaire à l'étape logique
+     (l'occasion d'abord, sinon la première étape incomplète, comme avant avec « Réserver ce véhicule »).
+     L'URL est nettoyée pour que l'action ne se rejoue pas au rechargement. Le splash (une fois par
+     visite) reste un simple rideau par-dessus : il ne retarde ni ne bloque rien. */
+  (function fromVehiclePage() {
+    const params = new URLSearchParams(location.search);
+    if (!params.has('vehicule')) return;
+    const id = params.get('vehicule');
+    params.delete('vehicule');
+    const qs = params.toString();
+    try { history.replaceState(history.state, '', location.pathname + (qs ? `?${qs}` : '') + location.hash); } catch (e) { /* URL laissée telle quelle */ }
+    if (!vehicles[id]) return;
+    toggleVehicle(id, true);
+    const s = firstIncompleteBeforeSend();
+    const go = () => goStep(s === 6 && !state.forfait ? 5 : s, { scroll: true });
+    if (document.readyState === 'complete') go(); else window.addEventListener('load', go, { once: true });
+  })();
 
   /* FAQ (mobile) : afficher les questions masquées */
   const faqMore = $('[data-faq-more]');

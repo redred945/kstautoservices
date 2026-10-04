@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>Image de partage – véhicule</title>
+<!-- Source des images de partage assets/img/og/<slug>.jpg (1200×630), une par véhicule.
+     Même mise en page que og.html. Ouvrir og-vehicle.html?v=<slug> (ou og-vehicle.html#<slug>) puis capturer à 1200×630
+     (voir tools/capture-og.mjs). Aucune information inventée : nom du véhicule, mention
+     « Location avec chauffeur », zone, téléphone. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=Jost:wght@400;500&display=block" rel="stylesheet">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { width: 1200px; height: 630px; background: #f4efe6; overflow: hidden; }
+  .card { position: relative; width: 1200px; height: 630px; color: #1a1712; font-family: Jost, sans-serif; }
+  /* photo en bas à droite, voilée vers la gauche et vers le haut : la voiture reste entière */
+  .photo { position: absolute; left: var(--left, 470px); right: 23px; top: var(--top, 190px); bottom: 23px;
+    background: var(--img) var(--pos, 50% 50%) / cover no-repeat; filter: saturate(.95) contrast(1.05);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, rgba(0,0,0,.55) 22%, #000 42%), linear-gradient(180deg, transparent 0, #000 26%);
+    -webkit-mask-composite: source-in; mask-image: linear-gradient(90deg, transparent 0, rgba(0,0,0,.55) 22%, #000 42%), linear-gradient(180deg, transparent 0, #000 26%); mask-composite: intersect; }
+  .shade { display: none; }
+  .frame { position: absolute; inset: 22px; border: 1px solid rgba(201,164,92,.55); }
+  .content { position: absolute; left: 70px; top: 56px; width: 600px; }
+  .logo { width: 150px; display: block; }
+  .eyebrow { margin-top: 24px; display: flex; align-items: center; gap: 14px; font: 500 15px/1 Jost; letter-spacing: .3em; text-transform: uppercase; color: #7a5f27; }
+  .eyebrow::before { content: ""; width: 40px; height: 1px; background: #a8853f; }
+  h1 { margin-top: 18px; font: 300 62px/1.02 "Cormorant Garamond", serif; letter-spacing: -.005em; max-width: 560px; }
+  h1 em { display: block; margin-top: 6px; font-style: italic; font-weight: 400; font-size: .82em; background: linear-gradient(100deg, #8f6f2e, #c9a45c 35%, #a8853f 60%, #d4b36a 82%, #8f6f2e); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { margin-top: 22px; font: 500 18px/1.4 Jost; letter-spacing: .03em; color: rgba(26,23,18,.82); white-space: nowrap; }
+  .sub b { color: #a8853f; font-weight: 500; margin: 0 .35em; }
+  .foot { position: absolute; left: 70px; bottom: 56px; display: flex; gap: 34px; align-items: center; font: 500 20px/1 Jost; letter-spacing: .06em; }
+  .foot span { font-size: 13px; letter-spacing: .26em; text-transform: uppercase; color: #7a5f27; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="photo" id="photo"></div>
+        <div class="frame"></div>
+    <div class="content">
+      <img class="logo" src="assets/img/logo/logo-kst.webp" alt="">
+      <p class="eyebrow" id="eyebrow">Nos véhicules</p>
+      <h1 id="title"></h1>
+      <p class="sub">Location avec chauffeur<b>·</b>Île-de-France &amp; régions voisines</p>
+    </div>
+    <div class="foot"><div>06.48.48.05.58</div></div>
+  </div>
+<script>
+  /* slug -> titre (mot en or entre <em>), étiquette, photo d'avant (la 1re de la page véhicule) et cadrage.
+     À tenir d'accord avec la table VEHICLES de tools/build-vehicles.mjs. */
+  const V = {
+    'rolls-royce-ghost':         { t: 'Rolls-Royce Ghost', tag: 'Signature', img: 'rolls-royce/ghost/image0.webp', pos: '40% 60%' },
+    'mercedes-classe-s-maybach': { t: 'Mercedes Classe&nbsp;S Maybach <em>Authentique</em>', tag: 'Authentique Maybach', img: 'mercedes/classe-s/classe-s-1.webp', pos: '40% 50%', left: '500px' },
+    'mercedes-classe-g-63-amg':  { t: 'Mercedes Classe&nbsp;G 6.3&nbsp;AMG <em>Authentique</em>', tag: 'Authentique', img: 'mercedes/classe-g/classe-g-3.webp', pos: '60% 50%', left: '545px' },
+    'mercedes-gle-coupe-43-amg': { t: 'Mercedes GLE Coupé 4.3&nbsp;AMG', img: 'mercedes/gle/gle-coupe-amg.webp', pos: '45% 50%', left: '530px' },
+    'porsche-cayenne-coupe':     { t: 'Porsche Cayenne Coupé', img: 'porsche/cayenne.webp', pos: '45% 50%', left: '510px' },
+    'maserati-ghibli':           { t: 'Maserati Ghibli', img: 'maserati/ghbli/ghibli.webp', pos: '55% 50%' },
+    'mercedes-classe-c':         { t: 'Mercedes Classe C', img: 'mercedes/classe-c/classe-c.webp', pos: '45% 50%', left: '520px' }
+  };
+  /* ?v=<slug> ou #<slug> (certains serveurs de test suppriment la query en redirigeant .html -> sans extension) */
+  const slug = new URLSearchParams(location.search).get('v') || location.hash.slice(1) || 'rolls-royce-ghost';
+  const v = V[slug] || V['rolls-royce-ghost'];
+  document.getElementById('title').innerHTML = v.t;
+  document.getElementById('eyebrow').textContent = v.tag || 'Nos véhicules';
+  const p = document.getElementById('photo');
+  p.style.setProperty('--img', `url(assets/img/${v.img})`);
+  p.style.setProperty('--pos', v.pos);
+  if (v.left) p.style.setProperty('--left', v.left);
+  document.title = 'Image de partage – ' + slug;
+</script>
+</body>
+</html>
