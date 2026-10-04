@@ -7,7 +7,7 @@
    Le site est statique. Deux modes d'envoi, choisis automatiquement :
 
    1. Web3Forms (recommandé) : créez une clé gratuite sur https://web3forms.com
-      avec l'adresse contact@kstautoservices.com, puis collez-la ci-dessous à la
+      avec l'adresse contact@kstautoloc.fr, puis collez-la ci-dessous à la
       place de WEB3FORMS_ACCESS_KEY. La demande est alors envoyée par e-mail au
       client sans quitter le site.
    2. Tant que la clé n'est pas renseignée : repli propre sur mailto: (ouvre le
@@ -19,7 +19,7 @@
   const WEB3FORMS_ACCESS_KEY = 'WEB3FORMS_ACCESS_KEY';
 
   const CONTACT = {
-    email: 'contact@kstautoservices.com',
+    email: 'contact@kstautoloc.fr',
     tel: '+33648480558',
     telHuman: '06.48.48.05.58',
     wa: 'https://wa.me/33648480558'

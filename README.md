@@ -26,7 +26,7 @@ Pour prévisualiser en local : `npx serve .` (ou tout serveur statique). Ouvrir 
 
 ## Brancher l'envoi des demandes (Web3Forms)
 
-1. Créer une clé gratuite sur https://web3forms.com avec l'adresse `contact@kstautoservices.com`.
+1. Créer une clé gratuite sur https://web3forms.com avec l'adresse `contact@kstautoloc.fr`.
 2. Dans `assets/js/app.js`, remplacer la valeur de `WEB3FORMS_ACCESS_KEY` (en haut du fichier) par la clé reçue.
 
 Tant que la clé n'est pas renseignée, le formulaire bascule automatiquement sur `mailto:` (ouvre la messagerie du visiteur avec sujet et message préremplis). Les boutons « Appeler » et « WhatsApp » (`wa.me/33648480558`, texte prérempli) sont toujours proposés.
@@ -50,7 +50,7 @@ Après un changement de `style.css` ou `app.js`, incrémenter `?v=1` dans les ba
 - [ ] Tarifs : partout « Sur devis ». Aucun prix n'est affiché.
 - [ ] Textes des marques Porsche et Maserati : pas de texte d'origine, volontairement sobres.
 - [ ] Icône iOS (`apple-touch-icon`) : utilise le logo non carré ; fournir un PNG carré 180×180 si souhaité.
-- [ ] Vérifier le nom de domaine dans `canonical`, `og:url`, `sitemap.xml` (`https://kstautoservices.com`).
+- [ ] Vérifier le nom de domaine dans `canonical`, `og:url`, `sitemap.xml` (`https://kstautoloc.fr`).
 
 ## Vidéo du hero
 

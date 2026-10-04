@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://kstautoservices.com/sitemap.xml
+Sitemap: https://kstautoloc.fr/sitemap.xml
