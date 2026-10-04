@@ -1235,7 +1235,6 @@ html.is-splash .hero__title .line:nth-child(3) > span { animation-delay: 2.98s; 
 .field [aria-invalid="true"] { border-color: var(--danger); }
 .field [aria-invalid="true"]:focus { box-shadow: 0 0 0 3px rgba(227, 139, 124, .25); }
 .field__error { font-size: .9rem; line-height: 1.45; color: var(--danger); }
-.field__row { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .2rem 1rem; }
 .field select {
   appearance: none;
   -webkit-appearance: none;
@@ -1516,22 +1515,15 @@ html.is-splash .hero__title .line:nth-child(3) > span { animation-delay: 2.98s; 
 .included .ico { width: 1.6rem; height: 1.6rem; margin-top: .1rem; color: var(--gold); }
 .included strong { color: var(--ivory); font-weight: 500; }
 
-/* étape 5 : coordonnées */
-.mini-recap { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.6rem; }
-.mini-recap:empty { display: none; }
-.mini {
-  display: inline-flex; align-items: center; gap: .5rem;
-  min-height: 40px;
-  padding: 0 .9rem;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: rgba(201, 164, 92, .06);
-  color: var(--ivory);
-  font: 400 .84rem/1 var(--sans);
-}
-.mini .ico { color: var(--gold); font-size: .95rem; }
-.mini:hover { border-color: var(--gold); }
-@media (min-width: 1000px) { .mini-recap { display: none; } }
+/* étape 6 : coordonnées */
+/* emplacement du faire-part sur mobile (vide ailleurs : aucune place prise) */
+.recap-slot:empty { display: none; }
+/* précision facultative : lien discret, champ replié par défaut */
+.precision { margin: -.3rem 0 1.3rem; }
+.precision__toggle { display: inline-flex; align-items: center; }
+.precision__box { margin: 0; }
+.precision__box:not([hidden]) { animation: panelIn .5s var(--ease-out) both; }
+.field.precision__box textarea { min-height: 6.5rem; }
 
 .form-alert {
   margin-top: 1rem;
@@ -1775,6 +1767,38 @@ html.is-splash .hero__title .line:nth-child(3) > span { animation-delay: 2.98s; 
 }
 @media (min-width: 1000px) {
   .recap__continue { display: none; }
+}
+
+/* Étape 6 sur mobile : le faire-part est posé dans la page, au-dessus des champs. Il annule tout ce qui fait le tiroir
+   (position fixe, translation, visibilité, hauteur max, défilement interne, coins du haut, ombre) et masque ses boutons
+   « fermer » et « Poursuivre ». Le bouton « Ma demande » devient redondant : masqué à l'étape 6. */
+.bcard[data-step="6"] .recap-toggle { display: none; }
+@media (max-width: 999.98px) {
+  .recap.fp.is-inline {
+    position: static;
+    z-index: auto;
+    max-width: 34rem;
+    max-height: none;
+    margin: 0 auto 1.8rem;
+    overflow: visible;
+    border-radius: 4px;
+    box-shadow: 0 24px 50px -30px rgba(26, 23, 18, .45);
+    transform: none !important;
+    transition: none;
+    visibility: visible;
+  }
+  .recap.is-inline .fp__paper { padding: 1.3rem clamp(.9rem, 4vw, 1.5rem) 1rem; border-radius: 2px; }
+  /* version resserrée : les champs de coordonnées restent à portée du premier écran de défilement */
+  .recap.is-inline .fp__invite { display: none; }
+  .recap.is-inline .fp__orn { margin: .8rem 0; }
+  .recap.is-inline .fp__occ { margin-top: 0; }
+  .recap.is-inline .fp__chips { gap: .4rem; margin-top: .9rem; }
+  .recap.is-inline .fp__chips li { padding: .45rem .7rem; letter-spacing: .14em; }
+  .recap.is-inline .fp__edit { margin-top: .7rem; }
+  .recap.is-inline .fp__note { padding-top: .8rem; }
+  .recap.is-inline .fp__foot { margin-top: .2rem; }
+  .recap.is-inline .recap__close,
+  .recap.is-inline .recap__continue { display: none; }
 }
 
 /* ---------- 10. Zone, horaires, contact, FAQ ---------- */

@@ -158,10 +158,10 @@
   const DEFAULTS = () => ({
     occasion: '', mode: 'single', start: '', end: '', time: '', trip: [newPoint(), newPoint()],
     vehicles: [], forfait: '', forfaitAutre: '', options: [],
-    name: '', email: '', phone: '', message: '', edited: false
+    name: '', email: '', phone: '', precision: ''
   });
   const state = DEFAULTS();
-  const CHOICE_KEYS = ['occasion', 'trip', 'mode', 'start', 'end', 'time', 'vehicles', 'forfait', 'forfaitAutre', 'options'];
+  let precisionOpen = false; // champ « précision » déplié (état d'affichage, non persisté)
 
   function restore() {
     const s = storage.get();
@@ -192,8 +192,8 @@
     state.name = str(s.name, 100);
     state.email = str(s.email, 120);
     state.phone = str(s.phone, 30);
-    state.message = str(s.message, 2000);
-    state.edited = s.edited === true && state.message.trim() !== '';
+    // Les anciens champs « message » et « edited » (message modifiable) sont ignorés : le message est toujours généré.
+    state.precision = str(s.precision, 500);
   }
   const persist = () => storage.set(state);
 
@@ -246,6 +246,8 @@
     return (n > 1 ? 'Options : ' : 'Option : ') + optionItems() + ' (prix sur demande).';
   };
 
+  /* Message complet envoyé à KST : généré d'après les choix, suivi de la précision facultative du client.
+     Jamais affiché ni modifiable (le champ #f-message est masqué). Toujours non vide. */
   function buildMessage() {
     let s = 'Bonjour, je souhaite une demande de devis pour ' + (OCC[state.occasion] ? OCC[state.occasion].phrase : 'une location de voiture de luxe');
     const d = dateClause();
@@ -262,6 +264,8 @@
     if (fo) lines.push('Forfait souhaité : ' + fo + '.');
     const op = optionsLine();
     if (op) lines.push(op);
+    const extra = state.precision.trim();
+    if (extra) lines.push('', 'Précision du client : ' + extra);
     return lines.join('\n');
   }
   function joinList(list) {
@@ -274,7 +278,6 @@
   function update(patch, { keepTrip = false } = {}) {
     Object.assign(state, patch);
     const keys = Object.keys(patch);
-    if (!state.edited && keys.some(k => CHOICE_KEYS.includes(k))) state.message = buildMessage();
     persist();
     render(keys, keepTrip);
   }
@@ -282,7 +285,7 @@
   function resetState(keepContact) {
     const keep = keepContact ? { name: state.name, email: state.email, phone: state.phone } : {};
     Object.assign(state, DEFAULTS(), keep);
-    state.message = buildMessage();
+    precisionOpen = false;
   }
 
   /* ==========================================================================
@@ -578,11 +581,12 @@
   const resultEl = $('[data-result]', form);
   const f = {
     time: $('#f-time'), name: $('#f-name'),
-    phone: $('#f-phone'), email: $('#f-email'), message: $('#f-message'),
+    phone: $('#f-phone'), email: $('#f-email'), precision: $('#f-precision'), message: $('#f-message'),
     forfaitAutre: $('#f-forfait-autre'),
     website: form.elements.website
   };
-  const regenBtn = $('[data-regen]', form);
+  const precisionBox = $('[data-precision-box]', form);
+  const precisionToggle = $('[data-precision-toggle]', form);
   const alertBox = $('[data-form-alert]', form);
   const submitBtn = $('[data-submit]', form);
   const whatsappLinks = $$('[data-whatsapp]');
@@ -1187,23 +1191,6 @@
     trayEl.classList.toggle('is-visible', n > 0 && !inBooking);
   }
 
-  function renderMini() {
-    const items = [];
-    if (OCC[state.occasion]) items.push([1, OCC[state.occasion].icon, OCC[state.occasion].label]);
-    if (state.start) items.push([2, 'i-cal', dateSummary()]);
-    const r = routeInfo();
-    if (r.mode) {
-      const txt = r.mode === 'both' ? `${r.a} — ${r.b}` : r.mode === 'start' ? r.a : `vers ${r.b}`;
-      items.push([3, 'i-pin', txt + (r.extra ? ` · ${r.extra}` : '')]);
-    }
-    if (state.vehicles.length) items.push([4, 'i-wheel', state.vehicles.length === 1 ? vehicles[state.vehicles[0]].full : `${state.vehicles.length} véhicules`]);
-    const extra = [state.forfait ? forfaitText() : '', state.options.length ? state.options.length + (state.options.length > 1 ? ' options' : ' option') : ''].filter(Boolean);
-    if (extra.length) items.push([5, 'i-clock', extra.join(' · ')]);
-    $('[data-mini-recap]', form).innerHTML = items.map(([s, ico, text]) =>
-      `<button type="button" class="mini" data-goto-step="${s}"><svg class="ico" aria-hidden="true"><use href="#${ico}"/></svg>${esc(text)}</button>`
-    ).join('');
-  }
-
   const setVal = (el, v) => { if (el.value !== v) el.value = v; };
 
   function renderFields() {
@@ -1214,9 +1201,15 @@
     setVal(f.name, state.name);
     setVal(f.phone, state.phone);
     setVal(f.email, state.email);
-    setVal(f.message, state.message);
-    regenBtn.hidden = f.message.value === buildMessage();
-    const text = f.message.value.trim();
+    setVal(f.precision, state.precision);
+    // La précision se déplie d'elle-même si elle est déjà renseignée (état restauré) ; sinon repliée.
+    if (state.precision && !precisionOpen) precisionOpen = true;
+    precisionBox.hidden = !precisionOpen;
+    precisionToggle.hidden = precisionOpen;
+    precisionToggle.setAttribute('aria-expanded', String(precisionOpen));
+    // Message complet (choix + précision) : champ masqué, toujours à jour, lu par l'envoi et WhatsApp
+    const text = buildMessage().trim();
+    setVal(f.message, text);
     whatsappLinks.forEach(a => { a.href = CONTACT.wa + (text ? `?text=${encodeURIComponent(text)}` : ''); });
   }
 
@@ -1268,7 +1261,6 @@
     renderFields();
     renderExtras();
     renderRecap();
-    renderMini();
     renderStepper();
   }
 
@@ -1297,12 +1289,14 @@
     hideResult();
     const back = n < step;
     step = n;
+    bcard.dataset.step = String(n);
     panels.forEach(p => {
       const on = Number(p.dataset.panel) === n;
       p.hidden = !on;
       p.classList.toggle('is-back', on && back);
     });
     renderStepper();
+    placeRecap();
     if (n === 2) renderCalendar();
     if (focus) {
       const title = $(`[data-panel="${n}"] .panel__title`, form);
@@ -1321,8 +1315,7 @@
   const FIELDS = {
     nom: { el: f.name, label: 'Nom' },
     telephone: { el: f.phone, label: 'Téléphone' },
-    email: { el: f.email, label: 'E-mail' },
-    message: { el: f.message, label: 'Votre demande' }
+    email: { el: f.email, label: 'E-mail' }
   };
   const RULES = {
     nom: v => (!v.trim() ? 'Indiquez votre nom.' : v.trim().length < 2 ? 'Votre nom semble trop court.' : ''),
@@ -1333,8 +1326,7 @@
     email: v => {
       if (!v.trim()) return 'Indiquez votre adresse e-mail.';
       return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()) ? '' : 'Cette adresse e-mail ne semble pas valide. Exemple : nom@exemple.fr.';
-    },
-    message: v => (!v.trim() ? 'Décrivez votre demande en quelques mots.' : v.trim().length < 10 ? 'Votre demande est un peu courte (10 caractères minimum).' : '')
+    }
   };
   $$('[data-error]', form).forEach(p => p.setAttribute('aria-live', 'polite'));
 
@@ -1361,7 +1353,8 @@
       nom: f.name.value.trim(),
       email: f.email.value.trim(),
       telephone: f.phone.value.trim(),
-      message: f.message.value.trim(),
+      message: f.message.value.trim() || buildMessage().trim(),
+      precision: f.precision.value.trim(),
       occasion: OCC[state.occasion] ? OCC[state.occasion].label : '',
       depart: filled(startPt()) ? startPt().addr.trim() + (state.time ? ` (${timeLabel(state.time)})` : '') : '',
       arrivee: endPt().addr.trim(),
@@ -1454,6 +1447,7 @@
       email: d.email,
       telephone: d.telephone,
       message: d.message,
+      precision: d.precision,
       occasion: d.occasion,
       date_evenement: d.date,
       heure_prise_en_charge: d.heure,
@@ -1552,6 +1546,30 @@
   }
   recapBtn.setAttribute('aria-expanded', 'false');
 
+  /* Étape 6 sur mobile : le faire-part quitte le tiroir et s'affiche dans la page, au-dessus des champs
+     (classe .is-inline : ni dialogue, ni fond sombre, ni bouton fermer). Partout ailleurs, il reste à sa place
+     d'origine (colonne sticky sur bureau, tiroir « Ma demande » sur mobile aux étapes 1 à 5). */
+  const recapSlot = $('[data-recap-slot]', form);
+  const recapMark = document.createComment('faire-part');
+  recapEl.before(recapMark);
+  function placeRecap() {
+    const inline = mqDrawer.matches && step === STEPS;
+    if (inline === recapEl.classList.contains('is-inline')) return;
+    const hadFocus = recapEl.contains(document.activeElement);
+    if (inline) {
+      closeOverlay(recapEl, { restore: false }); // tiroir éventuellement ouvert : fermé proprement (rôle, backdrop, verrou de scroll)
+      recapSlot.append(recapEl);
+    } else {
+      recapMark.after(recapEl);
+    }
+    recapEl.classList.toggle('is-inline', inline);
+    // Déplacer le nœud fait perdre le focus : on le ramène au titre de l'étape plutôt que sur <body>
+    if (hadFocus) {
+      const title = $(`[data-panel="${step}"] .panel__title`, form);
+      if (title) title.focus({ preventScroll: true });
+    }
+  }
+
   // Le faire-part s'incline très légèrement sous le curseur (bureau, souris uniquement).
   if (window.matchMedia('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)').matches) {
     recapEl.addEventListener('pointermove', e => {
@@ -1565,7 +1583,7 @@
       recapEl.style.setProperty('--rx', '0deg');
     });
   }
-  mqDrawer.addEventListener('change', () => closeOverlay(recapEl, { restore: false }));
+  mqDrawer.addEventListener('change', () => { closeOverlay(recapEl, { restore: false }); placeRecap(); });
 
   /* ==========================================================================
      Événements globaux (délégation)
@@ -1653,10 +1671,10 @@
       return;
     }
 
-    if (hit('[data-regen]')) {
-      update({ edited: false, message: buildMessage() });
-      f.message.focus();
-      announce('Votre demande a été mise à jour d’après vos choix.');
+    if (hit('[data-precision-toggle]')) {
+      precisionOpen = true;
+      renderFields();
+      f.precision.focus();
       return;
     }
 
@@ -1695,16 +1713,11 @@
   /* Saisies des champs */
   /* On relit tous les champs texte à chaque saisie : l'autoremplissage du navigateur
      modifie plusieurs champs d'un coup, aucun ne doit être écrasé par l'état. */
-  const TEXT_FIELDS = { name: f.name, phone: f.phone, email: f.email, forfaitAutre: f.forfaitAutre };
+  const TEXT_FIELDS = { name: f.name, phone: f.phone, email: f.email, precision: f.precision, forfaitAutre: f.forfaitAutre };
   form.addEventListener('input', e => {
     if (e.target.matches('[data-trip-addr]')) { onTripInput(e.target); return; }
     const patch = {};
     Object.entries(TEXT_FIELDS).forEach(([key, el]) => { if (el.value !== state[key]) patch[key] = el.value; });
-    if (e.target === f.message) {
-      const v = f.message.value;
-      patch.message = v;
-      patch.edited = v.trim() !== '' && v !== buildMessage();
-    }
     if (Object.keys(patch).length) update(patch);
   });
   form.addEventListener('change', e => {
@@ -1833,7 +1846,6 @@
      Initialisation
      ========================================================================== */
   restore();
-  if (!state.edited) state.message = buildMessage();
   calViewFromState();
   setFilter('all', false);
   render();
