@@ -1386,6 +1386,10 @@
   const mailtoUrl = d => `mailto:${CONTACT.email}?subject=${encodeURIComponent(mailSubject(d))}&body=${encodeURIComponent(mailBody(d))}`;
 
   const KEY_OK = /^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(WEB3FORMS_ACCESS_KEY);
+  /* Envoi par le serveur du site (send.php, sur le VPS) : actif seulement sur le vrai domaine.
+     Sur un aperçu (Vercel, localhost) il n'existe pas : on garde Web3Forms ou, à défaut, l'e-mail du visiteur. */
+  const MAIL_ENDPOINT = '/send.php';
+  const USE_SERVER_MAIL = /(^|\.)kstautoloc\.fr$/i.test(location.hostname);
 
   function setLoading(on) {
     sending = on;
@@ -1438,9 +1442,8 @@
     announce('Votre application e-mail va s’ouvrir avec votre demande préremplie.');
   }
 
-  async function viaWeb3Forms(d) {
-    const payload = {
-      access_key: WEB3FORMS_ACCESS_KEY,
+  function requestPayload(d) {
+    return {
       subject: mailSubject(d),
       from_name: 'Site KST Auto Loc’',
       name: d.nom,
@@ -1458,18 +1461,22 @@
       forfait: d.forfait,
       options: d.options
     };
+  }
+
+  /* Envoie la demande en JSON ; `isOk` dit si la réponse du service confirme l'envoi. */
+  async function postRequest(url, payload, d, isOk) {
     setLoading(true);
     const ctl = new AbortController();
     const timer = setTimeout(() => ctl.abort(), 15000);
     try {
-      const res = await fetch(WEB3FORMS_URL, {
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify(payload),
         signal: ctl.signal
       });
       const json = await res.json().catch(() => null);
-      if (!res.ok || !json || !json.success) throw new Error((json && json.message) || `HTTP ${res.status}`);
+      if (!res.ok || !isOk(json)) throw new Error((json && json.message) || `HTTP ${res.status}`);
       setLoading(false);
       onSent();
     } catch (err) {
@@ -1484,6 +1491,9 @@
       clearTimeout(timer);
     }
   }
+
+  const viaWeb3Forms = d => postRequest(WEB3FORMS_URL, Object.assign({ access_key: WEB3FORMS_ACCESS_KEY }, requestPayload(d)), d, json => !!(json && json.success));
+  const viaServer = d => postRequest(MAIL_ENDPOINT, requestPayload(d), d, json => !!(json && json.ok));
 
   form.addEventListener('submit', e => {
     e.preventDefault();
@@ -1516,7 +1526,7 @@
     }
 
     const data = collect();
-    if (KEY_OK) viaWeb3Forms(data); else viaMailto(data);
+    if (USE_SERVER_MAIL) viaServer(data); else if (KEY_OK) viaWeb3Forms(data); else viaMailto(data);
   });
 
   /* ==========================================================================
