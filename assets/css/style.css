@@ -3065,3 +3065,30 @@ html.is-splash .splash { background: #f4efe6; }
 @media (min-width: 900px) {
   .footer__brand { flex-direction: column; align-items: flex-start; flex-wrap: nowrap; }
 }
+
+/* Trajet : départ, étapes entre les deux, arrivée toujours en dernier */
+.trip__kicker { margin: 0; }
+.trip__pt--end::before { display: none; }
+.trip__pt--end .trip__main { padding-bottom: .3rem; }
+.trip__pt--end .trip__dot { border-color: var(--gold); background: #1a1712; color: var(--gold-light); }
+.trip__pt--end .trip__dot .ico { width: 17px; height: 17px; }
+/* le fil d'or traverse la rangée « Ajouter une étape » en contournant sa pastille */
+.trip__addrow::before, .trip__addrow::after {
+  content: "";
+  position: absolute; left: calc(var(--dot) / 2);
+  width: 1px;
+  background: linear-gradient(180deg, var(--gold), var(--line));
+}
+.trip__addrow::before { top: 0; bottom: calc(50% + var(--dot) / 2 + 5px); }
+.trip__addrow::after { top: calc(50% + var(--dot) / 2 + 5px); bottom: -5px; }
+.trip__addrow { margin: -.6rem 0 .5rem; }
+.trip__add { font-size: .68rem; letter-spacing: .16em; color: var(--gold); }
+.trip__add:hover:not([disabled]) { color: var(--gold-light); }
+/* faire-part : arrivée seule */
+.fp__route.is-to:not(.is-empty)::before { content: "vers"; text-transform: lowercase; letter-spacing: .1em; }
+/* lisibilité sur fond ivoire : erreurs, champ invalide, texte d'exemple */
+.trip__field .field__error { margin-top: .1rem; color: #a3392a; }
+.booking .field [aria-invalid="true"] { border-color: #b4483a; }
+.booking .field input::placeholder, .booking .field textarea::placeholder { color: rgba(26, 23, 18, .5); }
+.trip__time--main { max-width: 380px; }
+.trip__pt--end .trip__dot .ico { color: #e8d29a; stroke-width: 1.8; }

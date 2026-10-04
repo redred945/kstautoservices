@@ -28,7 +28,7 @@
   const WEB3FORMS_URL = 'https://api.web3forms.com/submit';
   const VIDEO_SRC = 'assets/img/Home/video-presentation.mp4';
   const BAN_URL = 'https://api-adresse.data.gouv.fr/search/';   // Base Adresse Nationale (gratuite, sans clé) ; lat/lon = priorité à l'Île-de-France
-  const MAX_POINTS = 8;                                          // prise en charge + 7 étapes
+  const MAX_POINTS = 8;                                          // départ + arrivée + jusqu'à 6 étapes entre les deux
   const STEPS = 6;
 
   /* ---------- Utilitaires ---------- */
@@ -149,13 +149,14 @@
      État & persistance
      ========================================================================== */
   /* Un point du trajet : adresse saisie (ou libellé BAN), ville mémorisée, heure facultative.
-     trip[0] = prise en charge (son heure est state.time, choisie à l'étape 2). */
+     trip = [départ, …étapes…, arrivée] : toujours au moins 2 points.
+     trip[0] = départ (son heure est state.time, choisie à l'étape 2) ; le dernier point est l'arrivée (sans heure). */
   let ptSeq = 0;
   const TIME_RE = /^\d{2}:\d{2}$/;
   const newPoint = (o = {}) => ({ id: ++ptSeq, addr: str(o.addr, 160), city: str(o.city, 80), time: TIME_RE.test(o.time || '') ? o.time : '' });
 
   const DEFAULTS = () => ({
-    occasion: '', mode: 'single', start: '', end: '', time: '', trip: [newPoint()],
+    occasion: '', mode: 'single', start: '', end: '', time: '', trip: [newPoint(), newPoint()],
     vehicles: [], forfait: '', forfaitAutre: '', options: [],
     name: '', email: '', phone: '', message: '', edited: false
   });
@@ -167,9 +168,15 @@
     if (!s || typeof s !== 'object') return;
     if (OCC[s.occasion]) state.occasion = s.occasion;
     // Ancienne clé « city » (avant l'étape Trajet) : volontairement ignorée.
+    // Migration : 1 point -> on ajoute une arrivée vide ; 2 points ou plus -> le dernier devient l'arrivée
+    // (son éventuelle heure est ignorée) ; état illisible -> deux points vides (valeurs par défaut).
     if (Array.isArray(s.trip)) {
       const t = s.trip.filter(pt => pt && typeof pt === 'object').slice(0, MAX_POINTS).map(newPoint);
-      if (t.length) state.trip = t;
+      if (t.length === 1) t.push(newPoint());
+      if (t.length >= 2) {
+        t[t.length - 1].time = '';
+        state.trip = t;
+      }
     }
     if (s.mode === 'range') state.mode = 'range';
     if (isISO(s.start) && s.start >= TODAY) {
@@ -196,13 +203,34 @@
     return state.end ? `du ${rangeText(state.start, state.end)}` : `le ${longDate(state.start)}`;
   }
   /* Trajet : adresse renseignée, libellé court (ville) et lignes du message */
-  const filledPts = () => state.trip.filter(pt => pt.addr.trim());
+  const startPt = () => state.trip[0];
+  const endPt = () => state.trip[state.trip.length - 1];
+  const midPts = () => state.trip.slice(1, -1);
+  const filled = pt => !!pt.addr.trim();
   // Ville : celle de la suggestion BAN, sinon déduite de la saisie libre (« 77100 Meaux » ou dernier segment après une virgule)
   const cityOf = pt => pt.city || ((pt.addr.match(/\b\d{5}\s+([^,]+?)\s*$/) || [])[1] || (pt.addr.includes(',') ? pt.addr.split(',').pop().trim() : ''));
   const clip = (t, n) => (t.length > n ? t.slice(0, n - 1).trimEnd() + '…' : t);
   const placeOf = pt => clip((cityOf(pt) || pt.addr).trim(), 34);
   const stopLine = (pt, n) => `Étape ${n}${pt.time ? ' (' + timeLabel(pt.time) + ')' : ''} : ${pt.addr.trim()}`;
-  const stopLines = () => state.trip.slice(1).filter(pt => pt.addr.trim()).map((pt, k) => stopLine(pt, k + 2));
+  const stopLines = () => midPts().filter(filled).map((pt, k) => stopLine(pt, k + 2));
+  // Rue seule (sans code postal ni ville), pour distinguer départ et arrivée situés dans la même ville
+  const streetOf = pt => clip(pt.addr.trim().replace(/[,\s]+\d{5}\b.*$/, '').split(',')[0].trim() || cityOf(pt) || pt.addr.trim(), 34);
+  const plural = (n, one, many) => `${n} ${n > 1 ? many : one}`;
+
+  /* Résumé du trajet pour le faire-part et le mini-récapitulatif : { mode, a, b, extra }
+     mode : 'both' (départ et arrivée), 'start', 'end' ou '' (rien de renseigné). */
+  function routeInfo() {
+    const s = startPt(), e = endPt(), m = midPts().filter(filled).length;
+    const extra = m ? plural(m, 'étape', 'étapes') : '';
+    if (filled(s) && filled(e)) {
+      let a = placeOf(s), b = placeOf(e);
+      if (a === b) { a = streetOf(s); b = streetOf(e); }
+      return { mode: 'both', a, b, extra };
+    }
+    if (filled(s)) return { mode: 'start', a: placeOf(s), b: '', extra };
+    if (filled(e)) return { mode: 'end', a: '', b: placeOf(e), extra };
+    return { mode: '', a: '', b: '', extra: '' };
+  }
 
   /* Forfait : « 7 h », la durée libre saisie, ou « autre durée » tant qu'elle n'est pas précisée */
   const forfaitText = () => (FORFAITS.includes(state.forfait) ? hoursLabel(state.forfait)
@@ -223,10 +251,11 @@
     const d = dateClause();
     if (d) s += ' ' + d;
     const lines = [s + '.'];
-    const first = state.trip[0], t0 = state.time ? timeLabel(state.time) : '';
-    if (first.addr.trim()) lines.push(`Prise en charge${t0 ? ' à ' + t0 : ''} : ${first.addr.trim()}.`);
-    else if (t0) lines.push(`Prise en charge souhaitée à ${t0}.`);
+    const first = startPt(), last = endPt(), t0 = state.time ? timeLabel(state.time) : '';
+    if (filled(first)) lines.push(`Départ${t0 ? ' à ' + t0 : ''} : ${first.addr.trim()}.`);
+    else if (t0) lines.push(`Départ souhaité à ${t0}.`);
     stopLines().forEach(l => lines.push(l + '.'));
+    if (filled(last)) lines.push(`Arrivée : ${last.addr.trim()}.`);
     const cars = state.vehicles.map(id => 'la ' + vehicles[id].full);
     lines.push(cars.length ? `${cars.length > 1 ? 'Véhicules souhaités' : 'Véhicule souhaité'} : ${joinList(cars)}, avec chauffeur.` : 'Prestation avec chauffeur.');
     const fo = forfaitDetail();
@@ -755,58 +784,66 @@
   const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
   const tripIco = id => `<svg class="ico" aria-hidden="true"><use href="#${id}"/></svg>`;
   const tripSay = msg => { tripStatus.textContent = ''; setTimeout(() => { tripStatus.textContent = msg; }, 60); };
-  const tripErr = { on: false };
+  const tripErr = { start: false, end: false };
   const timeErr = { on: false };
   let tripNewId = 0;
 
+  /* Rôles : 0 = départ, dernier = arrivée, entre les deux = étapes numérotées « Étape 2, 3… » */
   function pointHTML(pt, i, n) {
-    const first = i === 0, last = n > 1 && i === n - 1, num = i + 1;
+    const first = i === 0, last = i === n - 1, mid = !first && !last, num = i + 1;
     const addrId = `trip-addr-${pt.id}`, listId = `trip-list-${pt.id}`, errId = `trip-err-${pt.id}`;
-    const tools = first ? '' :
+    const tools = !mid ? '' :
       `<div class="trip__tools" role="group" aria-label="Actions pour l’étape ${num}">` +
       `<button type="button" class="trip__tool" data-trip-up="${pt.id}" aria-label="Monter l’étape ${num}"${i === 1 ? ' disabled' : ''}>${tripIco('i-chev-u')}</button>` +
-      `<button type="button" class="trip__tool" data-trip-down="${pt.id}" aria-label="Descendre l’étape ${num}"${last ? ' disabled' : ''}>${tripIco('i-chev-d')}</button>` +
+      `<button type="button" class="trip__tool" data-trip-down="${pt.id}" aria-label="Descendre l’étape ${num}"${i === n - 2 ? ' disabled' : ''}>${tripIco('i-chev-d')}</button>` +
       `<button type="button" class="trip__tool trip__tool--del" data-trip-del="${pt.id}" aria-label="Supprimer l’étape ${num}">${tripIco('i-trash')}</button>` +
       '</div>';
     const under = first
       ? `<div class="field trip__time trip__time--main"><label for="trip-time-main">${tripIco('i-clock')}Heure de prise en charge <span class="req" aria-hidden="true">*</span></label><select id="trip-time-main" data-trip-time-main>${timeOptions(state.time, 'Choisir une heure')}</select></div>`
-      : `<div class="field trip__time"><label for="trip-time-${pt.id}">Heure <span class="opt">(facultatif)</span></label><select id="trip-time-${pt.id}" data-trip-time="${pt.id}">${timeOptions(pt.time)}</select></div>`;
-    return `<li class="trip__pt${pt.id === tripNewId ? ' is-new' : ''}">` +
-      `<span class="trip__dot" aria-hidden="true">${ROMAN[i] || num}</span>` +
+      : mid ? `<div class="field trip__time"><label for="trip-time-${pt.id}">Heure <span class="opt">(facultatif)</span></label><select id="trip-time-${pt.id}" data-trip-time="${pt.id}">${timeOptions(pt.time)}</select></div>` : '';
+    const title = first ? 'Départ' : last ? 'Arrivée' : `Étape ${num}`;
+    const label = first ? 'Adresse de départ <span class="req" aria-hidden="true">*</span>'
+      : last ? 'Adresse d’arrivée <span class="req" aria-hidden="true">*</span>'
+        : `Adresse<span class="vh"> de l’étape ${num}</span>`;
+    const dot = last ? tripIco('i-pin') : (ROMAN[i] || num);
+    const role = first ? 'start' : last ? 'end' : '';
+    return `<li class="trip__pt${first ? ' trip__pt--start' : ''}${last ? ' trip__pt--end' : ''}${pt.id === tripNewId ? ' is-new' : ''}">` +
+      `<span class="trip__dot" aria-hidden="true">${dot}</span>` +
       '<div class="trip__main">' +
-      '<div class="trip__head"><div class="trip__titles">' +
-      `<label class="trip__kicker" for="${addrId}">${first ? 'Adresse de prise en charge <span class="req" aria-hidden="true">*</span>' : `Étape ${num}<span class="vh"> : adresse</span>`}</label>` +
-      (last ? '<span class="trip__tag">Arrivée</span>' : '') +
-      '</div>' +
+      `<div class="trip__head"><p class="trip__kicker">${title}</p>` +
       tools +
       '</div>' +
-      '<div class="field trip__field"><div class="combo">' +
+      '<div class="field trip__field">' +
+      `<label class="trip__lbl" for="${addrId}">${label}</label>` +
+      '<div class="combo">' +
       `<input class="trip__input" id="${addrId}" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="${listId}" ` +
       `autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="next" maxlength="160" placeholder="Numéro, rue, ville" ` +
-      `data-trip-addr="${pt.id}" value="${esc(pt.addr)}"${first ? ` aria-required="true" aria-describedby="${errId}"` : ''}>` +
+      `data-trip-addr="${pt.id}" value="${esc(pt.addr)}"${role ? ` aria-required="true" aria-describedby="${errId}"` : ''}>` +
       `<ul class="combo__list" id="${listId}" role="listbox" aria-label="Suggestions d’adresses" hidden></ul>` +
       '</div>' +
-      (first ? `<p class="field__error" id="${errId}" data-trip-error hidden></p>` : '') +
+      (role ? `<p class="field__error" id="${errId}" data-trip-error="${role}" hidden></p>` : '') +
       '</div>' +
       under +
       '</div></li>';
   }
 
+  /* Le bouton d'ajout se place juste avant l'arrivée : il insère une étape entre le départ et l'arrivée */
   function renderTrip() {
     const n = state.trip.length;
     const full = n >= MAX_POINTS;
-    tripEl.innerHTML = state.trip.map((pt, i) => pointHTML(pt, i, n)).join('') +
-      '<li class="trip__addrow" role="presentation">' +
+    const addRow = '<li class="trip__addrow" role="presentation">' +
       `<button type="button" class="trip__add" data-trip-add${full ? ' disabled' : ''}>` +
       `<span class="trip__dot trip__dot--add" aria-hidden="true">${tripIco('i-plus')}</span>` +
       `<span>${full ? 'Nombre maximal d’étapes atteint' : 'Ajouter une étape'}</span></button></li>`;
+    tripEl.innerHTML = state.trip.map((pt, i) => (i === n - 1 ? addRow : '') + pointHTML(pt, i, n)).join('');
     tripNewId = 0;
     acReset();
     renderTripWhen();
-    if (tripErr.on) setTripError(true);
+    setTripError('start', tripErr.start);
+    setTripError('end', tripErr.end);
   }
 
-  /* Heure de prise en charge, mise en évidence sous l'adresse (même valeur qu'à l'étape 2) */
+  /* Heure de départ, mise en évidence sous l'adresse (même valeur qu'à l'étape 2) */
   function renderTripWhen() {
     const sel = $('[data-trip-time-main]', tripEl);
     if (!sel) return;
@@ -815,19 +852,37 @@
     if (timeErr.on) setTimeError(!state.time);
   }
 
-  function setTripError(on) {
-    tripErr.on = on;
-    const input = $('[data-trip-addr]', tripEl), box = $('[data-trip-error]', tripEl);
+  /* Erreurs d'adresse, une par champ : 'start' (départ) et 'end' (arrivée) */
+  const TRIP_MSG = {
+    start: 'Indiquez l’adresse de départ pour continuer.',
+    time: 'Indiquez l’heure de prise en charge pour continuer.',
+    end: 'Indiquez l’adresse d’arrivée pour continuer.'
+  };
+  const tripInput = key => { const all = $$('[data-trip-addr]', tripEl); return key === 'start' ? all[0] : all[all.length - 1]; };
+  function setTripError(key, on) {
+    tripErr[key] = on;
+    const input = tripInput(key), box = $(`[data-trip-error="${key}"]`, tripEl);
     if (!input || !box) return;
-    box.textContent = on ? 'Indiquez l’adresse de prise en charge pour continuer.' : '';
+    box.textContent = on ? TRIP_MSG[key] : '';
     box.hidden = !on;
     if (on) input.setAttribute('aria-invalid', 'true'); else input.removeAttribute('aria-invalid');
   }
-  function checkPickup() {
-    const ok = !!state.trip[0].addr.trim();
-    setTripError(!ok);
-    const timeOk = checkTime();
-    return ok && timeOk;
+  /* Premier champ obligatoire manquant, de haut en bas : 'start', 'time', 'end' ou '' */
+  const tripIssue = () => (!filled(startPt()) ? 'start' : !state.time ? 'time' : !filled(endPt()) ? 'end' : '');
+  /* Affiche les trois erreurs possibles ; vrai si le trajet est complet */
+  function checkTrip() {
+    setTripError('start', !filled(startPt()));
+    setTripError('end', !filled(endPt()));
+    checkTime();
+    return !tripIssue();
+  }
+  /* Amène le focus sur le premier champ en erreur et l'annonce */
+  function focusTripIssue() {
+    const k = tripIssue();
+    if (!k) return;
+    const el = k === 'time' ? $('[data-trip-time-main]', tripEl) : tripInput(k);
+    if (el) el.focus();
+    announce(TRIP_MSG[k]);
   }
 
   /* Heure de prise en charge obligatoire : erreur sous le champ de l'étape 2 et sous celui du trajet */
@@ -861,34 +916,41 @@
     update({ trip: state.trip.map(pt => (pt.id === id ? { ...pt, ...patch } : pt)) }, { keepTrip: true });
   }
 
+  /* Les erreurs d'adresse disparaissent dès que le champ concerné est renseigné */
+  function clearTripErrors() {
+    if (tripErr.start && filled(startPt())) setTripError('start', false);
+    if (tripErr.end && filled(endPt())) setTripError('end', false);
+  }
+
   function onTripInput(input) {
     setPoint(Number(input.dataset.tripAddr), { addr: input.value, city: '' });
-    if (tripErr.on && state.trip[0].addr.trim()) setTripError(false);
+    clearTripErrors();
     acSchedule(input);
   }
 
+  /* Une étape s'insère toujours juste avant l'arrivée, qui ne bouge jamais */
   function addStop() {
     if (state.trip.length >= MAX_POINTS) return;
     const pt = newPoint();
     tripNewId = pt.id;
-    update({ trip: [...state.trip, pt] });
+    update({ trip: [...state.trip.slice(0, -1), pt, endPt()] });
     const input = $(`#trip-addr-${pt.id}`);
     if (input) input.focus();
-    tripSay(`Étape ${state.trip.length} ajoutée. Saisissez son adresse.`);
+    tripSay(`Étape ${state.trip.length - 1} ajoutée avant l’arrivée. Saisissez son adresse.`);
   }
 
   function removeStop(id) {
     const i = state.trip.findIndex(pt => pt.id === id);
-    if (i < 1) return;
+    if (i < 1 || i > state.trip.length - 2) return;
     update({ trip: state.trip.filter(pt => pt.id !== id) });
     const next = $$('[data-trip-addr]', tripEl)[Math.min(i, state.trip.length - 1)];
     if (next) next.focus();
-    tripSay(`Étape ${i + 1} supprimée. Le trajet compte maintenant ${state.trip.length} ${state.trip.length > 1 ? 'adresses' : 'adresse'}.`);
+    tripSay(`Étape ${i + 1} supprimée. Le trajet compte maintenant ${state.trip.length} adresses.`);
   }
 
   function moveStop(id, d) {
     const i = state.trip.findIndex(pt => pt.id === id), j = i + d;
-    if (i < 1 || j < 1 || j >= state.trip.length) return;
+    if (i < 1 || j < 1 || j > state.trip.length - 2) return;
     const list = state.trip.slice();
     [list[i], list[j]] = [list[j], list[i]];
     update({ trip: list });
@@ -1000,7 +1062,7 @@
     input.value = r.label;
     acHide();
     setPoint(Number(input.dataset.tripAddr), { addr: r.label, city: r.city });
-    if (tripErr.on && state.trip[0].addr.trim()) setTripError(false);
+    clearTripErrors();
     tripSay(`Adresse choisie : ${r.label}.`);
   }
 
@@ -1063,21 +1125,20 @@
     el.classList.toggle('is-empty', !val);
   }
 
-  /* Mini-trajet du faire-part : « à Meaux », « Meaux — Paris — Chelles » ou « Meaux · 3 adresses » */
+  /* Mini-trajet du faire-part : « Meaux — Paris · 2 étapes », « à Meaux » (départ seul) ou « vers Paris » (arrivée seule) */
   function routeHTML() {
-    const pts = filledPts();
-    if (!pts.length) return '';
-    const names = [];
-    pts.forEach(pt => { const nm = placeOf(pt); if (nm && names[names.length - 1] !== nm) names.push(nm); });
-    if (pts.length === 1) return `<span>${esc(names[0])}</span>`;
-    if (names.length === 1) return `<span>${esc(names[0])}</span><span class="fp__cnt">${pts.length} adresses</span>`;
-    const shown = names.length > 3 ? [names[0], '…', names[names.length - 1]] : names;
-    return shown.map(n => `<span>${esc(n)}</span>`).join('<span class="vh">, puis </span><i class="fp__sep" aria-hidden="true"></i>');
+    const r = routeInfo();
+    if (!r.mode) return '';
+    const cnt = r.extra ? `<span class="fp__cnt">${esc(r.extra)}</span>` : '';
+    if (r.mode === 'start') return `<span>${esc(r.a)}</span>${cnt}`;
+    if (r.mode === 'end') return `<span>${esc(r.b)}</span>${cnt}`;
+    return `<span>${esc(r.a)}</span><span class="vh">, puis </span><i class="fp__sep" aria-hidden="true"></i><span>${esc(r.b)}</span>${cnt}`;
   }
 
   function renderRoute() {
     const el = $('[data-r="route"]', recapEl);
     const html = routeHTML();
+    const mode = routeInfo().mode;
     const next = html || 'Votre trajet';
     if (el.dataset.k !== next) {
       el.dataset.k = next;
@@ -1085,7 +1146,8 @@
       if (html && inBooking) { el.classList.remove('fp-in'); void el.offsetWidth; el.classList.add('fp-in'); }
     }
     el.classList.toggle('is-empty', !html);
-    el.classList.toggle('is-single', filledPts().length === 1);
+    el.classList.toggle('is-single', mode === 'start');
+    el.classList.toggle('is-to', mode === 'end');
   }
 
   function renderRecap() {
@@ -1129,8 +1191,11 @@
     const items = [];
     if (OCC[state.occasion]) items.push([1, OCC[state.occasion].icon, OCC[state.occasion].label]);
     if (state.start) items.push([2, 'i-cal', dateSummary()]);
-    const pts = filledPts();
-    if (pts.length) items.push([3, 'i-pin', placeOf(pts[0]) + (pts.length > 1 ? ` · ${pts.length} adresses` : '')]);
+    const r = routeInfo();
+    if (r.mode) {
+      const txt = r.mode === 'both' ? `${r.a} — ${r.b}` : r.mode === 'start' ? r.a : `vers ${r.b}`;
+      items.push([3, 'i-pin', txt + (r.extra ? ` · ${r.extra}` : '')]);
+    }
     if (state.vehicles.length) items.push([4, 'i-wheel', state.vehicles.length === 1 ? vehicles[state.vehicles[0]].full : `${state.vehicles.length} véhicules`]);
     const extra = [state.forfait ? forfaitText() : '', state.options.length ? state.options.length + (state.options.length > 1 ? ' options' : ' option') : ''].filter(Boolean);
     if (extra.length) items.push([5, 'i-clock', extra.join(' · ')]);
@@ -1180,7 +1245,7 @@
 
   const stepDone = n => (n === 1 ? !!state.occasion
     : n === 2 ? !!(state.start && state.time)
-      : n === 3 ? !!state.trip[0].addr.trim()
+      : n === 3 ? !!(filled(startPt()) && state.time && filled(endPt()))
         : n === 4 ? state.vehicles.length > 0
           : n === 5 ? !!(FORFAITS.includes(state.forfait) || (state.forfait === 'autre' && state.forfaitAutre.trim()) || state.options.length)
             : !!(state.name.trim() && state.email.trim() && state.phone.trim()));
@@ -1217,7 +1282,7 @@
     resultEl.hidden = true;
   }
 
-  /* gate : depuis l'étape Trajet, on n'avance pas sans adresse de prise en charge */
+  /* gate : depuis l'étape Trajet, on n'avance pas sans adresse de départ, heure et adresse d'arrivée */
   function goStep(n, { scroll = false, focus = true, gate = false } = {}) {
     n = Math.min(STEPS, Math.max(1, Number(n) || 1));
     if (gate && step === 2 && n > 2 && !checkDateTime()) {
@@ -1225,10 +1290,8 @@
       announce(state.start ? 'Indiquez l’heure de prise en charge pour continuer.' : 'Choisissez la date de votre événement pour continuer.');
       return;
     }
-    if (gate && step === 3 && n > 3 && !checkPickup()) {
-      const input = state.trip[0].addr.trim() ? $('[data-trip-time-main]', tripEl) : $('[data-trip-addr]', tripEl);
-      if (input) input.focus();
-      announce(state.trip[0].addr.trim() ? 'Indiquez l’heure de prise en charge pour continuer.' : 'Indiquez l’adresse de prise en charge pour continuer.');
+    if (gate && step === 3 && n > 3 && !checkTrip()) {
+      focusTripIssue();
       return;
     }
     hideResult();
@@ -1250,7 +1313,7 @@
     }
   }
 
-  const firstIncompleteBeforeSend = () => (!state.occasion ? 1 : (!state.start || !state.time) ? 2 : !state.trip[0].addr.trim() ? 3 : 6);
+  const firstIncompleteBeforeSend = () => (!state.occasion ? 1 : (!state.start || !state.time) ? 2 : tripIssue() ? 3 : 6);
 
   /* ==========================================================================
      Validation & envoi
@@ -1300,7 +1363,8 @@
       telephone: f.phone.value.trim(),
       message: f.message.value.trim(),
       occasion: OCC[state.occasion] ? OCC[state.occasion].label : '',
-      priseEnCharge: state.trip[0].addr.trim(),
+      depart: filled(startPt()) ? startPt().addr.trim() + (state.time ? ` (${timeLabel(state.time)})` : '') : '',
+      arrivee: endPt().addr.trim(),
       etapes: stopLines().join('\n'),
       date: state.start ? (state.end ? `Du ${rangeText(state.start, state.end)}` : longDate(state.start)) : '',
       heure: state.time ? timeLabel(state.time) : '',
@@ -1318,8 +1382,9 @@
     if (d.occasion) lines.push(`Occasion : ${d.occasion}`);
     if (d.date) lines.push(`Date : ${d.date}`);
     if (d.heure) lines.push(`Heure de prise en charge : ${d.heure}`);
-    if (d.priseEnCharge) lines.push(`Prise en charge : ${d.priseEnCharge}`);
+    if (d.depart) lines.push(`Départ : ${d.depart}`);
     if (d.etapes) d.etapes.split('\n').forEach(l => lines.push(l));
+    if (d.arrivee) lines.push(`Arrivée : ${d.arrivee}`);
     if (d.vehicules) lines.push(`Véhicules : ${d.vehicules}`);
     if (d.forfait) lines.push(`Forfait : ${d.forfait}`);
     if (d.options) lines.push(`Options (prix sur demande) : ${d.options}`);
@@ -1392,7 +1457,8 @@
       occasion: d.occasion,
       date_evenement: d.date,
       heure_prise_en_charge: d.heure,
-      prise_en_charge: d.priseEnCharge,
+      depart: d.depart,
+      arrivee: d.arrivee,
       etapes: d.etapes,
       vehicules: d.vehicules,
       forfait: d.forfait,
@@ -1442,13 +1508,10 @@
     }
     clearAlert();
 
-    // La prise en charge est indispensable pour établir un devis : retour à l'étape Trajet si elle manque.
-    if (!state.trip[0].addr.trim()) {
+    // Départ, heure de prise en charge et arrivée sont indispensables pour établir un devis : retour à l'étape Trajet s'il en manque un.
+    if (!checkTrip()) {
       goStep(3, { scroll: 'auto', focus: false });
-      checkPickup();
-      const input = $('[data-trip-addr]', tripEl);
-      if (input) input.focus();
-      announce('Indiquez l’adresse de prise en charge pour continuer.');
+      focusTripIssue();
       return;
     }
 
