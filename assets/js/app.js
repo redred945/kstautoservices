@@ -1346,10 +1346,10 @@
     render();
     showResult({
       title: 'Votre demande a bien été envoyée',
-      text: 'Merci de votre confiance : KST Auto Loc’ a bien reçu votre demande et vous recontacte au plus vite pour établir votre devis. Sous réserve de disponibilité.',
+      text: 'Merci de votre confiance. Un conseiller KST Auto Loc’ a bien reçu votre demande et vous répond au plus vite, par téléphone ou par e-mail, pour établir votre devis. Pensez à vérifier vos courriers indésirables.',
       buttons: BTN.fresh + BTN.call
     });
-    announce('Votre demande a bien été envoyée. KST Auto Loc vous recontacte au plus vite.');
+    announce('Votre demande a bien été envoyée. Un conseiller KST Auto Loc vous répond au plus vite.');
   }
 
   function viaMailto(d) {
@@ -1594,6 +1594,17 @@
       e.preventDefault();
       const target = document.getElementById(el.dataset.focusField);
       if (target) target.focus();
+      return;
+    }
+
+    // « Copier ma demande » : le texte généré n'est plus affiché, on le copie pour le coller où l'on veut (Instagram, Snapchat, SMS…)
+    if (hit('[data-direct-copy]')) {
+      const status = $('[data-direct-status]', form);
+      copyText(f.message.value.trim()).then(ok => {
+        if (status) status.textContent = ok
+          ? 'Votre demande est copiée : collez-la dans Instagram, Snapchat, un SMS ou n’importe quelle messagerie.'
+          : 'La copie automatique n’a pas fonctionné : utilisez plutôt le bouton « Envoyer ma demande ».';
+      });
       return;
     }
 

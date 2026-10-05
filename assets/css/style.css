@@ -3518,3 +3518,16 @@ html.vp.is-locked { background: #0a0a0b; }   /* la gouttière du défilement (sc
 @media (prefers-reduced-motion: reduce) {
   .vp-lb, .vp-slide__zoom, .vp-card, .vp-card__media img, .vcard__name a { transition: none; }
 }
+
+/* Canaux directs sous « Envoyer ma demande » */
+.alt-send { align-items: flex-start; }
+.alt-send > p:first-child { flex: 1 1 100%; }
+.alt-send .alt-send__status {
+  flex: 1 1 100%;
+  min-height: 1.4em;
+  margin: -.2rem 0 0;
+  font: italic 400 1rem/1.45 var(--serif);
+  color: var(--gold);
+}
+.alt-send .alt-send__status:empty { display: none; }
+.alt-send__btns .btn .ico { width: 1.05em; height: 1.05em; }
