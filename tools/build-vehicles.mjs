@@ -129,8 +129,9 @@ function relatedCards(v) {
 
 function page(v) {
   const pageUrl = url(v.slug);
-  const title = `${v.name} – Location avec chauffeur Île-de-France | ${BRAND_NAME}`;
-  const description = `${v.name} avec chauffeur pour votre mariage ou événement en Île-de-France et régions voisines. 5 places, 1 bagage. Tarif sur devis.`;
+  const title = `Location ${v.name} avec chauffeur | ${BRAND_NAME}`;
+  const description = `Location ${v.name} avec chauffeur pour mariage et événement en Île-de-France. 5 places, sans caution, devis sur demande.`;
+  const keywords = [`location ${v.name} mariage`, `location ${v.name} avec chauffeur`, `voiture de mariage ${v.brand}`, `${v.brand} avec chauffeur Île-de-France`, 'location voiture de luxe avec chauffeur', 'location voiture mariage', 'KST Auto Loc', 'Ozoir-la-Ferrière'].join(', ');
   const ogImage = `${SITE}/assets/img/og/${v.slug}.jpg`;
   const ogAlt = `${v.name} – ${TAGLINE}`;
   const first = v.images[0];
@@ -158,6 +159,7 @@ function page(v) {
         url: pageUrl,
         image: v.images.map(im => `${SITE}${abs(im.src)}`),
         brand: { '@type': 'Brand', name: v.brand },
+        category: 'Location de voiture avec chauffeur',
         description
       }
     ]
@@ -191,9 +193,13 @@ function page(v) {
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>${esc(title)}</title>
   <meta name="description" content="${esc(description)}">
+  <meta name="keywords" content="${esc(keywords)}">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
   <meta name="theme-color" content="#f4efe6">
   <meta name="color-scheme" content="light">
   <link rel="canonical" href="${pageUrl}">
+  <link rel="alternate" hreflang="fr-FR" href="${pageUrl}">
+  <link rel="alternate" hreflang="x-default" href="${pageUrl}">
 
   <meta property="og:type" content="website">
   <meta property="og:locale" content="fr_FR">
