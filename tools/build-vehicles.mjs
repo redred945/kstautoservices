@@ -446,7 +446,6 @@ for (const v of vehicles) {
 const today = new Date().toISOString().slice(0, 10);
 const entries = [
   { loc: `${SITE}/`, freq: 'monthly', prio: '1.0' },
-  { loc: `${SITE}/mentions-legales.html`, freq: 'yearly', prio: '0.2' },
   ...vehicles.map(v => ({ loc: url(v.slug), freq: 'monthly', prio: '0.8' }))
 ];
 writeFileSync(join(ROOT, 'sitemap.xml'),
