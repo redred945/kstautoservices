@@ -3550,3 +3550,9 @@ html.vp.is-locked { background: #0a0a0b; }   /* la gouttière du défilement (sc
 
 .hours__list li > span:last-child { white-space: nowrap; }
 .hours__list li > span:first-child { min-width: 0; }
+
+/* Suggestions d'adresse : la liste passe toujours au-dessus des étapes suivantes (bouton « Ajouter une étape », arrivée) */
+.trip__pt:focus-within, .trip__pt:has(.combo__list:not([hidden])) { z-index: 30; }
+.trip__pt .combo__list { z-index: 40; background: #fff; opacity: 1; }
+.trip__note { margin: .8rem 0 0; }
+.trip__note textarea { min-height: 5.5rem; resize: vertical; }

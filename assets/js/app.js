@@ -158,7 +158,7 @@
   const DEFAULTS = () => ({
     occasion: '', mode: 'single', start: '', end: '', time: '', trip: [newPoint(), newPoint()],
     vehicles: [], forfait: '', forfaitAutre: '', options: [],
-    name: '', email: '', phone: '', precision: ''
+    name: '', email: '', phone: '', precision: '', tripNote: ''
   });
   const state = DEFAULTS();
   let precisionOpen = false; // champ « précision » déplié (état d'affichage, non persisté)
@@ -169,14 +169,11 @@
     if (OCC[s.occasion]) state.occasion = s.occasion;
     // Ancienne clé « city » (avant l'étape Trajet) : volontairement ignorée.
     // Migration : 1 point -> on ajoute une arrivée vide ; 2 points ou plus -> le dernier devient l'arrivée
-    // (son éventuelle heure est ignorée) ; état illisible -> deux points vides (valeurs par défaut).
+    // (son heure d'arrivée, facultative, est conservée) ; état illisible -> deux points vides (valeurs par défaut).
     if (Array.isArray(s.trip)) {
       const t = s.trip.filter(pt => pt && typeof pt === 'object').slice(0, MAX_POINTS).map(newPoint);
       if (t.length === 1) t.push(newPoint());
-      if (t.length >= 2) {
-        t[t.length - 1].time = '';
-        state.trip = t;
-      }
+      if (t.length >= 2) state.trip = t;
     }
     if (s.mode === 'range') state.mode = 'range';
     if (isISO(s.start) && s.start >= TODAY) {
@@ -194,6 +191,7 @@
     state.phone = str(s.phone, 30);
     // Les anciens champs « message » et « edited » (message modifiable) sont ignorés : le message est toujours généré.
     state.precision = str(s.precision, 500);
+    state.tripNote = str(s.tripNote, 500);
   }
   const persist = () => storage.set(state);
 
@@ -257,7 +255,9 @@
     if (filled(first)) lines.push(`Départ${t0 ? ' à ' + t0 : ''} : ${first.addr.trim()}.`);
     else if (t0) lines.push(`Départ souhaité à ${t0}.`);
     stopLines().forEach(l => lines.push(l + '.'));
-    if (filled(last)) lines.push(`Arrivée : ${last.addr.trim()}.`);
+    const tEnd = last.time ? timeLabel(last.time) : '';
+    if (filled(last)) lines.push(`Arrivée${tEnd ? ' vers ' + tEnd : ''} : ${last.addr.trim()}.`);
+    if (state.tripNote.trim()) lines.push('Message concernant le trajet : ' + state.tripNote.trim());
     const cars = state.vehicles.map(id => 'la ' + vehicles[id].full);
     lines.push(cars.length ? `${cars.length > 1 ? 'Véhicules souhaités' : 'Véhicule souhaité'} : ${joinList(cars)}, avec chauffeur.` : 'Prestation avec chauffeur.');
     const fo = forfaitDetail();
@@ -725,7 +725,9 @@
       '</div>';
     const under = first
       ? `<div class="field trip__time trip__time--main"><label for="trip-time-main">${tripIco('i-clock')}Heure de prise en charge <span class="req" aria-hidden="true">*</span></label><select id="trip-time-main" data-trip-time-main>${timeOptions(state.time, 'Choisir une heure')}</select></div>`
-      : mid ? `<div class="field trip__time"><label for="trip-time-${pt.id}">Heure <span class="opt">(facultatif)</span></label><select id="trip-time-${pt.id}" data-trip-time="${pt.id}">${timeOptions(pt.time)}</select></div>` : '';
+      : mid ? `<div class="field trip__time"><label for="trip-time-${pt.id}">Heure <span class="opt">(facultatif)</span></label><select id="trip-time-${pt.id}" data-trip-time="${pt.id}">${timeOptions(pt.time)}</select></div>`
+        : `<div class="field trip__time"><label for="trip-time-${pt.id}">Heure d’arrivée souhaitée <span class="opt">(facultatif)</span></label><select id="trip-time-${pt.id}" data-trip-time="${pt.id}">${timeOptions(pt.time)}</select></div>` +
+          `<div class="field trip__note"><label for="trip-note">Un message sur votre trajet <span class="opt">(facultatif)</span></label><textarea id="trip-note" name="trajet_message" data-trip-note rows="3" maxlength="500" placeholder="Précisions utiles : accès, point de rendez-vous, nombre de passagers…">${esc(state.tripNote)}</textarea></div>`;
     const title = first ? 'Départ' : last ? 'Arrivée' : `Étape ${num}`;
     const label = first ? 'Adresse de départ <span class="req" aria-hidden="true">*</span>'
       : last ? 'Adresse d’arrivée <span class="req" aria-hidden="true">*</span>'
@@ -1278,7 +1280,8 @@
       precision: f.precision.value.trim(),
       occasion: OCC[state.occasion] ? OCC[state.occasion].label : '',
       depart: filled(startPt()) ? startPt().addr.trim() + (state.time ? ` (${timeLabel(state.time)})` : '') : '',
-      arrivee: endPt().addr.trim(),
+      arrivee: filled(endPt()) ? endPt().addr.trim() + (endPt().time ? ` (${timeLabel(endPt().time)})` : '') : '',
+      messageTrajet: state.tripNote.trim(),
       etapes: stopLines().join('\n'),
       date: state.start ? (state.end ? `Du ${rangeText(state.start, state.end)}` : longDate(state.start)) : '',
       heure: state.time ? timeLabel(state.time) : '',
@@ -1299,6 +1302,7 @@
     if (d.depart) lines.push(`Départ : ${d.depart}`);
     if (d.etapes) d.etapes.split('\n').forEach(l => lines.push(l));
     if (d.arrivee) lines.push(`Arrivée : ${d.arrivee}`);
+    if (d.messageTrajet) lines.push(`Message sur le trajet : ${d.messageTrajet.replace(/\r?\n/g, ' ')}`);
     if (d.vehicules) lines.push(`Véhicules : ${d.vehicules}`);
     if (d.forfait) lines.push(`Forfait : ${d.forfait}`);
     if (d.options) lines.push(`Options (prix sur demande) : ${d.options}`);
@@ -1377,6 +1381,7 @@
       heure_prise_en_charge: d.heure,
       depart: d.depart,
       arrivee: d.arrivee,
+      message_trajet: d.messageTrajet,
       etapes: d.etapes,
       vehicules: d.vehicules,
       forfait: d.forfait,
@@ -1639,6 +1644,7 @@
   const TEXT_FIELDS = { name: f.name, phone: f.phone, email: f.email, precision: f.precision, forfaitAutre: f.forfaitAutre };
   form.addEventListener('input', e => {
     if (e.target.matches('[data-trip-addr]')) { onTripInput(e.target); return; }
+    if (e.target.matches('[data-trip-note]')) { update({ tripNote: e.target.value }, { keepTrip: true }); return; }
     const patch = {};
     Object.entries(TEXT_FIELDS).forEach(([key, el]) => { if (el.value !== state[key]) patch[key] = el.value; });
     if (Object.keys(patch).length) update(patch);
