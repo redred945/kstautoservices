@@ -1738,7 +1738,7 @@
   })();
 
   /* Horaires : jour courant et état (heure de Paris, d'après les horaires affichés) */
-  const OPEN = { 1: [510, 1350], 2: [510, 1350], 3: [510, 1350], 4: [510, 1350], 5: [510, 1350], 6: [570, 1410] };
+  const OPEN = { 1: [510, 1200], 2: [510, 1200], 3: [510, 1200], 4: [510, 1200], 5: [510, 1200], 6: [570, 1200] };
   function parisNow() {
     try {
       const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Paris', weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(new Date());

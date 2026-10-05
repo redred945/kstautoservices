@@ -383,8 +383,8 @@ ${v.blurb ? `            <p class="vp-quote">${esc(BRAND_TEXT[v.blurb])}</p>\n` 
         <div>
           <h2 class="footer__h">Horaires du bureau</h2>
           <ul>
-            <li><span>Lun – Ven</span> 8h30 – 22h30</li>
-            <li><span>Samedi</span> 9h30 – 23h30</li>
+            <li><span>Lun – Ven</span> 8h30 – 20h00</li>
+            <li><span>Samedi</span> 9h30 – 20h00</li>
             <li><span>Dimanche</span> fermé</li>
             <li class="footer__always">Prestations et contact 24h/24, 7j/7</li>
           </ul>
