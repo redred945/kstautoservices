@@ -455,7 +455,8 @@ for (const v of vehicles) {
 const today = new Date().toISOString().slice(0, 10);
 const entries = [
   { loc: `${SITE}/`, freq: 'monthly', prio: '1.0' },
-  ...vehicles.map(v => ({ loc: url(v.slug), freq: 'monthly', prio: '0.8' }))
+  ...vehicles.map(v => ({ loc: url(v.slug), freq: 'monthly', prio: '0.8' })),
+  { loc: `${SITE}/mentions-legales.html`, freq: 'yearly', prio: '0.2' }
 ];
 writeFileSync(join(ROOT, 'sitemap.xml'),
   `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
