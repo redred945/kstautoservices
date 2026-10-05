@@ -3531,3 +3531,22 @@ html.vp.is-locked { background: #0a0a0b; }   /* la gouttière du défilement (sc
 }
 .alt-send .alt-send__status:empty { display: none; }
 .alt-send__btns .btn .ico { width: 1.05em; height: 1.05em; }
+
+/* Horaires du bureau, prestations et contact 24h/24 – 7j/7, absence de caution */
+.hours__always {
+  margin: 0 0 1.1rem;
+  padding: .9rem 1.1rem;
+  border: 1px solid var(--line-strong);
+  border-left: 3px solid var(--gold);
+  border-radius: 3px;
+  background: linear-gradient(90deg, rgba(232, 210, 154, .28), rgba(232, 210, 154, .06));
+  font: 400 .95rem/1.5 var(--sans);
+  color: var(--ivory-dim);
+}
+.hours__always strong { display: block; margin-bottom: .15rem; font: 500 1.35rem/1.2 var(--serif); color: var(--ivory); }
+.footer .footer__always { margin-top: .5rem; color: var(--gold); font-style: italic; white-space: normal; }
+.note.note--assure { margin: 1.2rem 0 0; padding-left: 1rem; border-left: 2px solid var(--gold); }
+.vp-assure { margin: .2rem 0 1rem; font: italic 400 1.1rem/1.5 var(--serif); color: var(--gold); }
+
+.hours__list li > span:last-child { white-space: nowrap; }
+.hours__list li > span:first-child { min-width: 0; }

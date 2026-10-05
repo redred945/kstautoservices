@@ -180,7 +180,8 @@ function page(v) {
     v.type ? `<li>${esc(v.type)}</li>` : '',
     `<li>${ico('i-seat')}5 places</li>`,
     `<li>${ico('i-bag')}1 bagage</li>`,
-    `<li>${ico('i-wheel')}Avec chauffeur</li>`
+    `<li>${ico('i-wheel')}Avec chauffeur</li>`,
+    `<li>${ico('i-check')}Sans caution</li>`
   ].filter(Boolean).join('\n            ');
 
   return `<!doctype html>
@@ -280,6 +281,7 @@ ${v.tag ? `          <p class="vp-tag">${esc(v.tag)}</p>\n` : ''}          <p cl
             ${chips}
           </ul>
           <p class="vp-price">Tarif <span>Sur devis</span></p>
+          <p class="vp-assure">Aucune caution n’est demandée : seul un acompte est à verser au moment de la réservation.</p>
           <div class="vp-text">
 ${v.blurb ? `            <p class="vp-quote">${esc(BRAND_TEXT[v.blurb])}</p>\n` : ''}            <p>${esc(GENERIC_TEXT)}</p>
           </div>
@@ -379,11 +381,12 @@ ${v.blurb ? `            <p class="vp-quote">${esc(BRAND_TEXT[v.blurb])}</p>\n` 
           </ul>
         </div>
         <div>
-          <h2 class="footer__h">Horaires</h2>
+          <h2 class="footer__h">Horaires du bureau</h2>
           <ul>
             <li><span>Lun – Ven</span> 8h30 – 22h30</li>
             <li><span>Samedi</span> 9h30 – 23h30</li>
             <li><span>Dimanche</span> fermé</li>
+            <li class="footer__always">Prestations et contact 24h/24, 7j/7</li>
           </ul>
         </div>
       </div>

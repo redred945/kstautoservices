@@ -1345,11 +1345,11 @@
     calViewFromState();
     render();
     showResult({
-      title: 'Votre demande a bien été envoyée',
-      text: 'Merci de votre confiance. Un conseiller KST Auto Loc’ a bien reçu votre demande et vous répond au plus vite, par téléphone ou par e-mail, pour établir votre devis. Pensez à vérifier vos courriers indésirables.',
+      title: 'Votre demande a bien été prise en compte',
+      text: 'Merci pour votre confiance. Un conseiller KST Auto Loc’ a bien reçu votre demande et vous contactera dans les plus brefs délais, par téléphone ou par e-mail, afin de vous établir un devis personnalisé. Pensez également à vérifier vos courriers indésirables.',
       buttons: BTN.fresh + BTN.call
     });
-    announce('Votre demande a bien été envoyée. Un conseiller KST Auto Loc vous répond au plus vite.');
+    announce('Votre demande a bien été prise en compte. Un conseiller KST Auto Loc vous contactera dans les plus brefs délais.');
   }
 
   function viaMailto(d) {
@@ -1760,7 +1760,7 @@
     if (!status) return;
     status.hidden = false;
     status.classList.toggle('is-open', isOpen);
-    $('span', status).textContent = isOpen ? 'Ouvert actuellement' : 'Fermé actuellement';
+    $('span', status).textContent = isOpen ? 'Bureau ouvert' : 'Bureau fermé · joignable 24h/24';
   }
   renderHours();
   setInterval(renderHours, 60000);

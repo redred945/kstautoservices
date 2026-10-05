@@ -41,7 +41,7 @@
       }
     } catch (e) {}
   </script>
-  <link rel="stylesheet" href="assets/css/style.css?v=202610051909">
+  <link rel="stylesheet" href="assets/css/style.css?v=202610051930">
   <script>
     /* Les révélations au scroll ne s'activent que si app.js s'exécute ; sinon tout reste visible. */
     document.documentElement.classList.add('js');
@@ -69,15 +69,9 @@
         "openingHoursSpecification": [
           {
             "@type": "OpeningHoursSpecification",
-            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-            "opens": "08:30",
-            "closes": "22:30"
-          },
-          {
-            "@type": "OpeningHoursSpecification",
-            "dayOfWeek": "Saturday",
-            "opens": "09:30",
-            "closes": "23:30"
+            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+            "opens": "00:00",
+            "closes": "23:59"
           }
         ]
       },
@@ -101,6 +95,11 @@
           },
           {
             "@type": "Question",
+            "name": "Faut-il verser une caution ?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Aucune caution n’est demandée pour les véhicules : seul un acompte est à verser au moment de la réservation." }
+          },
+          {
+            "@type": "Question",
             "name": "Pour quels événements proposez-vous vos véhicules ?",
             "acceptedAnswer": { "@type": "Answer", "text": "Pour les mariages, les anniversaires et tout autre événement spécial." }
           },
@@ -112,7 +111,7 @@
           {
             "@type": "Question",
             "name": "Quels sont vos horaires ?",
-            "acceptedAnswer": { "@type": "Answer", "text": "Du lundi au vendredi de 8h30 à 22h30, le samedi de 9h30 à 23h30. Fermé le dimanche." }
+            "acceptedAnswer": { "@type": "Answer", "text": "Nos prestations sont assurées 24h/24 et 7j/7, et vous pouvez nous contacter à toute heure. Les horaires de notre bureau sont : du lundi au vendredi de 8h30 à 22h30, le samedi de 9h30 à 23h30, fermé le dimanche." }
           }
         ]
       }
@@ -379,7 +378,7 @@
             <p class="eyebrow"><span class="eyebrow__n">03</span> Nos véhicules</p>
             <h2 class="h2" id="fleet-title">Sept véhicules, tous avec chauffeur</h2>
           </div>
-          <p class="lead">Chaque véhicule propose 5 places et 1 bagage. Tarifs sur devis.</p>
+          <p class="lead">Chaque véhicule propose 5 places et 1 bagage. Tarifs sur devis. Aucune caution : seul un acompte est demandé à la réservation.</p>
         </header>
 
         <div class="filters" role="group" aria-label="Filtrer nos véhicules par marque" data-reveal>
@@ -863,6 +862,8 @@
                   </button>
                 </div>
 
+                <p class="note note--assure">Aucune caution : seul un acompte est demandé au moment de la réservation.</p>
+
                 <div class="alt-send">
                   <p>Ou contactez-nous directement</p>
                   <div class="alt-send__btns">
@@ -942,9 +943,10 @@
 
         <div class="hours" data-reveal style="--d:120ms">
           <div class="hours__head">
-            <h3 class="hours__title">Horaires</h3>
+            <h3 class="hours__title">Horaires du bureau</h3>
             <p class="hours__status" data-open-status hidden><i aria-hidden="true"></i><span></span></p>
           </div>
+          <p class="hours__always"><strong>Prestations et contact 24h/24 – 7j/7</strong>Nos prestations sont assurées à toute heure, et vous pouvez nous contacter à tout moment.</p>
           <ul class="hours__list" data-hours>
             <li data-days="1,2,3,4,5"><span>Lundi – Vendredi</span><span>8h30 – 22h30</span></li>
             <li data-days="6"><span>Samedi</span><span>9h30 – 23h30</span></li>
@@ -960,7 +962,7 @@
         <header class="section-head section-head--center" data-reveal>
           <p class="eyebrow"><span class="eyebrow__n">06</span> Contact</p>
           <h2 class="h2" id="contact-title">Parlons de votre événement</h2>
-          <p class="lead">Contactez-nous via le formulaire de devis ou directement au numéro indiqué pour une offre personnalisée.</p>
+          <p class="lead">Contactez-nous via le formulaire de devis ou directement au numéro indiqué pour une offre personnalisée. Nous sommes joignables 24h/24 et 7j/7.</p>
         </header>
 
         <ul class="contact__cards" data-reveal>
@@ -1009,6 +1011,10 @@
             <p>Nos prestations sont proposées sur devis. Faites votre demande via <a href="#reservation">le formulaire</a> ou par téléphone au <a href="tel:+33648480558">06.48.48.05.58</a>.</p>
           </details>
           <details class="faq__item" name="faq">
+            <summary>Faut-il verser une caution ?</summary>
+            <p>Aucune caution n’est demandée pour les véhicules : seul un acompte est à verser au moment de la réservation.</p>
+          </details>
+          <details class="faq__item" name="faq">
             <summary>Pour quels événements proposez-vous vos véhicules ?</summary>
             <p>Pour les mariages, les anniversaires et tout autre événement spécial.</p>
           </details>
@@ -1022,9 +1028,9 @@
           </details>
           <details class="faq__item" name="faq">
             <summary>Quels sont vos horaires ?</summary>
-            <p>Du lundi au vendredi de 8h30 à 22h30, le samedi de 9h30 à 23h30. Fermé le dimanche.</p>
+            <p>Nos prestations sont assurées 24h/24 et 7j/7, et vous pouvez nous contacter à toute heure. Les horaires de notre bureau sont : du lundi au vendredi de 8h30 à 22h30, le samedi de 9h30 à 23h30, fermé le dimanche.</p>
           </details>
-          <button type="button" class="faq__more" aria-expanded="false" data-faq-more>Voir les 3 autres questions</button>
+          <button type="button" class="faq__more" aria-expanded="false" data-faq-more>Voir les 4 autres questions</button>
         </div>
       </div>
     </section>
@@ -1062,11 +1068,12 @@
           </ul>
         </div>
         <div>
-          <h2 class="footer__h">Horaires</h2>
+          <h2 class="footer__h">Horaires du bureau</h2>
           <ul>
             <li><span>Lun – Ven</span> 8h30 – 22h30</li>
             <li><span>Samedi</span> 9h30 – 23h30</li>
             <li><span>Dimanche</span> fermé</li>
+            <li class="footer__always">Prestations et contact 24h/24, 7j/7</li>
           </ul>
         </div>
       </div>
@@ -1138,6 +1145,6 @@
     <p class="noscript">Le formulaire de devis nécessite JavaScript. Appelez-nous au <a href="tel:+33648480558">06.48.48.05.58</a> ou écrivez à <a href="mailto:contact@kstautoloc.fr">contact@kstautoloc.fr</a>.</p>
   </noscript>
 
-  <script src="assets/js/app.js?v=202610051909" defer></script>
+  <script src="assets/js/app.js?v=202610051930" defer></script>
 </body>
 </html>
